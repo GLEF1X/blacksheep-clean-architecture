@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "clean_architecture_fastapi"
+version = "0.1.0"
+description = ""
+authors = ["Gleb Garanin <glebgar567@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+kink = "^0.6.2"
+fastapi = "^0.70.0"
+injector = "^0.18.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pytest-asyncio = "^0.16.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
