@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import dataclasses
-import logging
 
-from sqlalchemy import table, Column, Identity, TIMESTAMP, func, SMALLINT, INTEGER, text
+from sqlalchemy import Column, Identity, TIMESTAMP, func, SMALLINT, INTEGER, text, Table
 from sqlalchemy.orm import registry, relationship
 
 from entities.models.order import Order
@@ -11,13 +10,11 @@ from entities.models.product import Product
 
 mapper_registry = registry()
 
-logger = logging.getLogger(__name__)
-
 
 @mapper_registry.mapped
 @dataclasses.dataclass()
 class OrderModel(Order):
-    __table__ = table(
+    __table__ = Table(
         "products",
         mapper_registry.metadata,
         Column("id", INTEGER, Identity(always=True), nullable=False, primary_key=True),
@@ -27,7 +24,7 @@ class OrderModel(Order):
 
     __mapper_args__ = {  # type: ignore
         "properties": {
-            "products": relationship("Address")
+            "products": relationship("ProductModel")
         }
     }
 
@@ -35,7 +32,7 @@ class OrderModel(Order):
 @mapper_registry.mapped
 @dataclasses.dataclass()
 class ProductModel(Product):
-    __table__ = table(
+    __table__ = Table(
         "orders",
         mapper_registry.metadata,
         Column("id", INTEGER, Identity(always=True), nullable=False, primary_key=True),
