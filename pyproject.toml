@@ -9,10 +9,14 @@ python = "^3.7"
 kink = "^0.6.2"
 fastapi = "^0.70.0"
 injector = "^0.18.4"
+SQLAlchemy = "^1.4.26"
+sqlalchemy2-stubs = "^0.0.2-alpha.19"
+alembic = "^1.7.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-asyncio = "^0.16.0"
+mypy = "^0.910"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
