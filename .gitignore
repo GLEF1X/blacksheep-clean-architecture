@@ -2,6 +2,9 @@
 __pycache__/
 *.py[cod]
 
+# sensetive credentials
+./config/.secrets.toml
+
 # C extensions
 *.so
 
