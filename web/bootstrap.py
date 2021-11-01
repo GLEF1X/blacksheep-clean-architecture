@@ -27,12 +27,14 @@ def get_settings() -> LazySettings:
         preload=[BASE_DIR / "settings.toml"],
         environments=["development", "production", "testing"],
         load_dotenv=False,
+        auto_cast=True
     )
 
 
 def configure_application(settings: LazySettings) -> Application:
     controllers_router = RoutesRegistry()
-    application = ApplicationWithCustomRouter()
+    application = ApplicationWithCustomRouter(debug=settings.web.debug,
+                                              show_error_details=settings.web.show_error_details)
     application.controllers_router = controllers_router
     _setup_dependency_injection(application, settings)
     _setup_routes(application, settings)
@@ -52,12 +54,12 @@ def _setup_routes(application: ApplicationWithCustomRouter, settings: LazySettin
     api.v1.install(application.controllers_router, settings)
     docs = OpenAPIHandler(
         info=Info(
-            title=settings.server.docs.title,
-            version=settings.server.docs.version
+            title=settings.web.docs.title,
+            version=settings.web.docs.version
         ),
-        ui_path=settings.server.docs.path,
-        json_spec_path=settings.server.docs.json_spec_path,
-        yaml_spec_path=settings.server.docs.yaml_spec_path,
+        ui_path=settings.web.docs.path,
+        json_spec_path=settings.web.docs.json_spec_path,
+        yaml_spec_path=settings.web.docs.yaml_spec_path,
     )
     docs.bind_app(application)
 
@@ -66,7 +68,7 @@ def run() -> None:
     settings = get_settings()
     application = configure_application(settings)
     options = {
-        'bind': '%s:%s' % (settings.server.host, settings.server.port),
+        'bind': '%s:%s' % (settings.web.host, settings.web.port),
         'workers': number_of_workers(),
         'worker_class': 'uvicorn.workers.UvicornWorker'
     }
