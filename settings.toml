@@ -1,0 +1,18 @@
+[default]
+
+[default.server]
+port = 8000
+host = "127.0.0.1"
+log_level = "info"
+reload = false
+debug = false
+
+[default.docs]
+title = "Example API"
+version = "1.0.0beta"
+
+[default.db]
+user = "postgres"
+host = "localhost"
+password = "postgres"
+database = "clean_architecture_db"
