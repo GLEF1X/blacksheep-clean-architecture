@@ -10,4 +10,3 @@ from entities.models.product import Product
 class Order:
     id: int
     products: List[Product]
-

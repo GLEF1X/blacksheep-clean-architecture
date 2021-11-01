@@ -2,8 +2,18 @@ from __future__ import annotations
 
 import dataclasses
 
-from sqlalchemy import Column, Identity, TIMESTAMP, func, SMALLINT, INTEGER, text, Table, \
-    ForeignKey, Integer
+from sqlalchemy import (
+    Column,
+    Identity,
+    TIMESTAMP,
+    func,
+    SMALLINT,
+    INTEGER,
+    text,
+    Table,
+    ForeignKey,
+    Integer,
+)
 from sqlalchemy.orm import registry, relationship
 
 from entities.models.order import Order
@@ -19,15 +29,19 @@ class OrderModel(Order):
     __table__ = Table(
         "products",
         mapper_registry.metadata,
-        Column("id", INTEGER, Identity(always=True, cache=5), nullable=False, primary_key=True),
+        Column(
+            "id",
+            INTEGER,
+            Identity(always=True, cache=5),
+            nullable=False,
+            primary_key=True,
+        ),
         Column("price", INTEGER, nullable=False),  # store price in cents
-        Column("weight", SMALLINT, nullable=False, server_default=text("1"))
+        Column("weight", SMALLINT, nullable=False, server_default=text("1")),
     )
 
     __mapper_args__ = {  # type: ignore
-        "properties": {
-            "products": relationship("ProductModel")
-        }
+        "properties": {"products": relationship("ProductModel")}
     }
 
 
@@ -37,9 +51,20 @@ class ProductModel(Product):
     __table__ = Table(
         "orders",
         mapper_registry.metadata,
-        Column("id", INTEGER, Identity(always=True, cache=5), nullable=False, primary_key=True),
-        Column("created_at", TIMESTAMP(timezone=True), server_default=func.now(), nullable=False),
-        Column("order_date", TIMESTAMP(timezone=True), nullable=False)
+        Column(
+            "id",
+            INTEGER,
+            Identity(always=True, cache=5),
+            nullable=False,
+            primary_key=True,
+        ),
+        Column(
+            "created_at",
+            TIMESTAMP(timezone=True),
+            server_default=func.now(),
+            nullable=False,
+        ),
+        Column("order_date", TIMESTAMP(timezone=True), nullable=False),
     )
 
 
@@ -49,7 +74,13 @@ class OrderItemModel(OrderItem):
     __table__ = Table(
         "order_items",
         mapper_registry.metadata,
-        Column("id", INTEGER, Identity(always=True, cache=5), nullable=False, primary_key=True),
+        Column(
+            "id",
+            INTEGER,
+            Identity(always=True, cache=5),
+            nullable=False,
+            primary_key=True,
+        ),
         Column(
             "order_id",
             INTEGER,
@@ -60,7 +91,7 @@ class OrderItemModel(OrderItem):
                 name="FK__order_items__order_item_order",
             ),
             nullable=False,
-            unique=True
+            unique=True,
         ),
         Column(
             "product_id",
@@ -70,9 +101,9 @@ class OrderItemModel(OrderItem):
                 ondelete="CASCADE",
                 onupdate="CASCADE",
                 name="FK__order_items__order_item_product",
-            )
+            ),
         ),
-        Column("quantity", SMALLINT, nullable=False, server_default=text("1"))
+        Column("quantity", SMALLINT, nullable=False, server_default=text("1")),
     )
 
     __mapper_args__ = {
@@ -88,6 +119,6 @@ class OrderItemModel(OrderItem):
                 uselist=False,
                 enable_typechecks=True,
                 primaryjoin="OrderItemModel.order_id == OrderModel.id",
-            )
+            ),
         }
     }

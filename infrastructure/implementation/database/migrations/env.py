@@ -14,8 +14,15 @@ fileConfig(config.config_file_name)
 target_metadata = tables.mapper_registry.metadata
 config.set_main_option(
     "sqlalchemy.url",
-    str(URL.create(drivername="postgresql+asyncpg", username="postgres", password="postgres",
-                   host="localhost", database="clean_architecture_db")),
+    str(
+        URL.create(
+            drivername="postgresql+asyncpg",
+            username="postgres",
+            password="postgres",
+            host="localhost",
+            database="clean_architecture_db",
+        )
+    ),
 )
 
 
@@ -38,7 +45,7 @@ def run_migrations_offline():
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         compare_type=True,
-        compare_server_default=True
+        compare_server_default=True,
     )
 
     with context.begin_transaction():

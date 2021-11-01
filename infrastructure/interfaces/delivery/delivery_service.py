@@ -4,5 +4,5 @@ from typing import Protocol
 
 
 class DeliveryServiceInterface(Protocol):
-
-    def calculate_delivery_cost(self, weight: float) -> float: ...
+    def calculate_delivery_cost(self, weight: float) -> float:
+        ...

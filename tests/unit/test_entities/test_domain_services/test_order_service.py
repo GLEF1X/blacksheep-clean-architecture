@@ -24,8 +24,8 @@ def order() -> Order:
         id=1,
         products=[
             Product(id=1, weight=5, price=50),
-            Product(id=2, weight=10, price=70)
-        ]
+            Product(id=2, weight=10, price=70),
+        ],
     )
 
 

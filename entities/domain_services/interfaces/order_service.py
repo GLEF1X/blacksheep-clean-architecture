@@ -6,5 +6,5 @@ from entities.models.order import Order
 
 
 class OrderServiceInterface(Protocol):
-
-    def get_total(self, order: Order) -> float: ...
+    def get_total(self, order: Order) -> float:
+        ...

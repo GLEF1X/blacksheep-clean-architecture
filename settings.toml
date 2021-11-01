@@ -1,18 +1,19 @@
 [default]
 
-[default.server]
+[default.web]
 port = 8000
 host = "127.0.0.1"
 log_level = "info"
-reload = false
-debug = false
+reload = true
 api_version = "v1"
-api_path = "@format /api/{this.server.api_version}"
+api_path = "@format /api/{this.web.api_version}"
+show_error_details = true
+debug = true
 
-[default.server.docs]
-path = "@format {this.server.api_path}/docs"
-json_spec_path = "@format {this.server.api_path}/openapi.json"
-yaml_spec_path = "@format {this.server.api_path}/openapi.yaml"
+[default.web.docs]
+path = "@format {this.web.api_path}/docs"
+json_spec_path = "@format {this.web.api_path}/openapi.json"
+yaml_spec_path = "@format {this.web.api_path}/openapi.yaml"
 title = "Example API"
 version = "1.0.0beta"
 

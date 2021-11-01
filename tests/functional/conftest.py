@@ -28,6 +28,11 @@ def settings() -> LazySettings:
     return get_settings()
 
 
+@pytest.fixture(scope="module", autouse=True)
+def set_test_settings(settings: LazySettings):
+    settings.configure(FORCE_ENV_FOR_DYNACONF="testing")
+
+
 @pytest.mark.asyncio
 @pytest.fixture(scope="module")
 async def app(settings: LazySettings) -> Application:
