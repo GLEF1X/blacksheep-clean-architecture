@@ -2,22 +2,22 @@ import pathlib
 
 from blacksheep.server import Application
 from blacksheep.server.openapi.v3 import OpenAPIHandler
-from blacksheep.server.routing import RoutesRegistry
+from blacksheep.server.routing import RoutesRegistry, Route
 from dynaconf import Dynaconf, LazySettings
 from openapidocs.v3 import Info
-
+from rodi import ServiceLifeStyle
 from entities.domain_services.implementation.order_service import OrderServiceImpl
 from entities.domain_services.interfaces.order_service import OrderServiceInterface
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
 from web import api
 from web.utils.gunicorn_app import StandaloneApplication, number_of_workers
-from web.utils.routing import APIRouter
+from web.utils.routing import PrefixedRouter
 
 BASE_DIR = pathlib.Path(__name__).resolve().parent.parent
 
 
-class ApplicationWithCustomRouter(Application):
-    router: APIRouter
+class ApplicationWithPrefixedRouter(Application):
+    router: PrefixedRouter
 
 
 def get_settings() -> LazySettings:
@@ -33,7 +33,7 @@ def get_settings() -> LazySettings:
 
 def configure_application(settings: LazySettings) -> Application:
     controllers_router = RoutesRegistry()
-    application = ApplicationWithCustomRouter(
+    application = ApplicationWithPrefixedRouter(
         debug=settings.web.debug, show_error_details=settings.web.show_error_details
     )
     application.controllers_router = controllers_router
@@ -46,14 +46,18 @@ def _setup_dependency_injection(
     application: Application, settings: LazySettings
 ) -> None:
     application.services.add_instance(application.controllers_router, RoutesRegistry)
-    application.services.add_instance(
-        OrderServiceImpl(DeliveryServiceImpl()), OrderServiceInterface
-    )
     application.services.add_instance(settings, LazySettings)
+
+    # domain services
+    application.services.register_factory(
+        lambda: OrderServiceImpl(DeliveryServiceImpl()),
+        life_style=ServiceLifeStyle.SCOPED,
+        return_type=OrderServiceInterface
+    )
 
 
 def _setup_routes(
-    application: ApplicationWithCustomRouter, settings: LazySettings
+    application: ApplicationWithPrefixedRouter, settings: LazySettings
 ) -> None:
     api.v1.install(application.controllers_router, settings)
     docs = OpenAPIHandler(

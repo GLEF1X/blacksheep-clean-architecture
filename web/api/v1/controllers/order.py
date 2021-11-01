@@ -7,6 +7,7 @@ from web.api.v1.controllers.base import RegistrableApiController
 
 
 class OrderController(RegistrableApiController):
+
     def register(self) -> None:
         self.add_route("/get/{order_id}", self.get_order)
 

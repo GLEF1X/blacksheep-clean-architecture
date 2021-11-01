@@ -9,7 +9,7 @@ from .controllers.order import OrderController
 
 def install(route_registry: RoutesRegistry, settings: LazySettings) -> None:
     controllers: List[RegistrableApiController] = [
-        OrderController(route_registry, settings)
+        OrderController(route_registry, settings)  # type: ignore  # noqa
     ]
     for controller in controllers:
         controller.register()
