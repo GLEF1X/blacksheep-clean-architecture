@@ -1,15 +1,25 @@
 import pathlib
+from typing import Any
 
 from blacksheep.server import Application
 from blacksheep.server.openapi.v3 import OpenAPIHandler
-from blacksheep.server.routing import RoutesRegistry, Route
+from blacksheep.server.routing import RoutesRegistry
 from dynaconf import Dynaconf, LazySettings
 from openapidocs.v3 import Info
 from rodi import ServiceLifeStyle
+from sqlalchemy.engine import make_url
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import AsyncAdaptedQueuePool
+
 from entities.domain_services.implementation.order_service import OrderServiceImpl
-from entities.domain_services.interfaces.order_service import OrderServiceInterface
+from infrastructure.implementation.database.data_access.repository import SQLAlchemyRepository
+from infrastructure.implementation.database.data_access.unit_of_work import SQLAlchemyUnitOfWork
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
-from web import api
+from application.use_cases.interactor.mediator import Mediator
+from application.use_cases.order.queries.get_order_by_id.handler import GetOrderByIdHandler
+from application.use_cases.order.queries.get_order_by_id.query import GetOrderByIdQuery
+from web import controllers
 from web.utils.gunicorn_app import StandaloneApplication, number_of_workers
 from web.utils.routing import PrefixedRouter
 
@@ -43,23 +53,49 @@ def configure_application(settings: LazySettings) -> Application:
 
 
 def _setup_dependency_injection(
-    application: Application, settings: LazySettings
+        application: Application, settings: LazySettings
 ) -> None:
+    # controller dependencies
     application.services.add_instance(application.controllers_router, RoutesRegistry)
     application.services.add_instance(settings, LazySettings)
 
-    # domain services
+    # database
+    engine = create_async_engine(
+        url=make_url(settings.db.connection_uri),
+        future=True, query_cache_size=1200, pool_size=100,
+        max_overflow=200, poolclass=AsyncAdaptedQueuePool
+    )
+    session_pool = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False,
+                                autoflush=False)
+
+    # mediator
     application.services.register_factory(
-        lambda: OrderServiceImpl(DeliveryServiceImpl()),
-        life_style=ServiceLifeStyle.SCOPED,
-        return_type=OrderServiceInterface
+        lambda: _create_mediator(session_pool),
+        Mediator,
+        ServiceLifeStyle.SCOPED
+    )
+
+
+def _create_mediator(pool: sessionmaker) -> Mediator:
+    session = pool()
+    repository: SQLAlchemyRepository[Any] = SQLAlchemyRepository(session)
+    order_domain_service = OrderServiceImpl(DeliveryServiceImpl())
+    return Mediator(
+        query_handlers={
+            GetOrderByIdQuery: [
+                GetOrderByIdHandler(
+                    repository, order_domain_service, SQLAlchemyUnitOfWork(session)
+                )
+            ]
+        },
+        command_handlers={}
     )
 
 
 def _setup_routes(
-    application: ApplicationWithPrefixedRouter, settings: LazySettings
+        application: ApplicationWithPrefixedRouter, settings: LazySettings
 ) -> None:
-    api.v1.install(application.controllers_router, settings)
+    controllers.install(application.controllers_router, settings)
     docs = OpenAPIHandler(
         info=Info(title=settings.web.docs.title, version=settings.web.docs.version),
         ui_path=settings.web.docs.path,
