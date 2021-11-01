@@ -5,6 +5,6 @@ from typing import Protocol
 from entities.models.order import Order
 
 
-class OrderServiceInterface(Protocol):
+class OrderDomainServiceInterface(Protocol):
     def get_total(self, order: Order) -> float:
         ...

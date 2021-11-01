@@ -6,9 +6,9 @@ from typing import Any, Dict, Generic, Type, TypeVar, cast, AsyncGenerator
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
 
-from infrastructure.implementation.database.data_access.repository import SQLAlchemyRepository, \
-    AbstractRepository
+from infrastructure.implementation.database.data_access.repository import SQLAlchemyRepository
 from infrastructure.implementation.database.data_access.typedef import TransactionContext
+from infrastructure.interfaces.database.data_access.repository import AbstractRepository
 
 _Repository = TypeVar("_Repository", bound=AbstractRepository[Any])
 _T = TypeVar("_T", bound=SQLAlchemyRepository[Any])
@@ -20,7 +20,7 @@ class AbstractUnitOfWork(abc.ABC, Generic[_Repository]):
         self._repositories: Dict[str, _Repository] = {}
 
     @abc.abstractmethod
-    def transaction(self) -> Any:  # type: ignore
+    def acquire(self) -> Any:  # type: ignore
         pass
 
     @abc.abstractmethod
@@ -43,7 +43,7 @@ class SQLAlchemyUnitOfWork(AbstractUnitOfWork[SQLAlchemyRepository[Any]]):
             yield  # type: ignore
 
     @property
-    def transaction(self) -> TransactionContext:  # this property only for mypy and IDE's coverage
+    def acquire(self) -> TransactionContext:  # this property only for mypy and IDE's coverage
         return self._transaction()
 
     def get_repository(self, repository_type: Type[_T]) -> _T:

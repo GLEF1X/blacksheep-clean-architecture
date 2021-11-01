@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
-
 from sqlalchemy import (
     Column,
     Identity,
@@ -17,37 +15,14 @@ from sqlalchemy import (
 from sqlalchemy.orm import registry, relationship
 
 from entities.models.order import Order
-from entities.models.product import Product
 from entities.models.order_item import OrderItem
+from entities.models.product import Product
 
 mapper_registry = registry()
 
 
 @mapper_registry.mapped
-@dataclasses.dataclass()
 class OrderModel(Order):
-    __table__ = Table(
-        "products",
-        mapper_registry.metadata,
-        Column(
-            "id",
-            INTEGER,
-            Identity(always=True, cache=5),
-            nullable=False,
-            primary_key=True,
-        ),
-        Column("price", INTEGER, nullable=False),  # store price in cents
-        Column("weight", SMALLINT, nullable=False, server_default=text("1")),
-    )
-
-    __mapper_args__ = {  # type: ignore
-        "properties": {"products": relationship("ProductModel")}
-    }
-
-
-@mapper_registry.mapped
-@dataclasses.dataclass()
-class ProductModel(Product):
     __table__ = Table(
         "orders",
         mapper_registry.metadata,
@@ -67,9 +42,53 @@ class ProductModel(Product):
         Column("order_date", TIMESTAMP(timezone=True), nullable=False),
     )
 
+    __mapper_args__ = {  # type: ignore
+        "properties": {
+            "products": relationship(
+                "ProductModel",
+                secondary=lambda: OrderItemModel.__table__,
+                back_populates="orders",
+                enable_typechecks=True
+            )
+        }
+    }
+
 
 @mapper_registry.mapped
-@dataclasses.dataclass()
+class ProductModel(Product):
+    __table__ = Table(
+        "products",
+        mapper_registry.metadata,
+        Column(
+            "id",
+            INTEGER,
+            Identity(always=True, cache=5),
+            nullable=False,
+            primary_key=True,
+        ),
+        Column(
+            "created_at",
+            TIMESTAMP(timezone=True),
+            server_default=func.now(),
+            nullable=False,
+        ),
+        Column("price", INTEGER, nullable=False),  # store price in cents
+        Column("weight", SMALLINT, nullable=False, server_default=text("1")),
+    )
+
+    __mapper_args__ = {  # type: ignore
+        "properties": {
+            "orders": relationship(
+                "OrderModel",
+                secondary=lambda: OrderItemModel.__table__,
+                back_populates="products",
+                enable_typechecks=True
+            )
+        }
+    }
+
+
+@mapper_registry.mapped
 class OrderItemModel(OrderItem):
     __table__ = Table(
         "order_items",
@@ -105,20 +124,3 @@ class OrderItemModel(OrderItem):
         ),
         Column("quantity", SMALLINT, nullable=False, server_default=text("1")),
     )
-
-    __mapper_args__ = {
-        "properties": {
-            "product": relationship(
-                "Product",
-                uselist=False,
-                primaryjoin="OrderItemModel.product_id == ProductModel.id",
-                enable_typechecks=True,
-            ),
-            "order": relationship(
-                "Order",
-                uselist=False,
-                enable_typechecks=True,
-                primaryjoin="OrderItemModel.order_id == OrderModel.id",
-            ),
-        }
-    }
