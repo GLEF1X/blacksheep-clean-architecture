@@ -6,8 +6,13 @@ host = "127.0.0.1"
 log_level = "info"
 reload = false
 debug = false
+api_version = "v1"
+api_path = "@format /api/{this.server.api_version}"
 
-[default.docs]
+[default.server.docs]
+path = "@format {this.server.api_path}/docs"
+json_spec_path = "@format {this.server.api_path}/openapi.json"
+yaml_spec_path = "@format {this.server.api_path}/openapi.yaml"
 title = "Example API"
 version = "1.0.0beta"
 

@@ -2,10 +2,8 @@ from __future__ import annotations
 
 from entities.models.order import Order
 from infrastructure.interfaces.delivery.delivery_service import DeliveryServiceInterface
-from utils.dependency_injection import inject
 
 
-@inject
 class OrderServiceImpl:
 
     def __init__(self, delivery_service: DeliveryServiceInterface):

@@ -1,5 +1,4 @@
 import pathlib
-from typing import Tuple
 
 from blacksheep.server import Application
 from blacksheep.server.openapi.v3 import OpenAPIHandler
@@ -21,20 +20,23 @@ class ApplicationWithCustomRouter(Application):
     router: APIRouter
 
 
-def configure_application() -> Tuple[Application, LazySettings]:
-    settings = Dynaconf(
+def get_settings() -> LazySettings:
+    return Dynaconf(
         settings_files=['settings.toml', '.secrets.toml'],
         redis=True,
         preload=[BASE_DIR / "settings.toml"],
         environments=["development", "production", "testing"],
         load_dotenv=False,
     )
+
+
+def configure_application(settings: LazySettings) -> Application:
     controllers_router = RoutesRegistry()
     application = ApplicationWithCustomRouter()
     application.controllers_router = controllers_router
     _setup_dependency_injection(application, settings)
     _setup_routes(application, settings)
-    return application, settings
+    return application
 
 
 def _setup_dependency_injection(application: Application, settings: LazySettings) -> None:
@@ -43,16 +45,26 @@ def _setup_dependency_injection(application: Application, settings: LazySettings
         OrderServiceImpl(DeliveryServiceImpl()),
         OrderServiceInterface
     )
+    application.services.add_instance(settings, LazySettings)
 
 
 def _setup_routes(application: ApplicationWithCustomRouter, settings: LazySettings) -> None:
-    api.v1.install(application.controllers_router)
-    docs = OpenAPIHandler(info=Info(title=settings.docs.title, version=settings.docs.version))
+    api.v1.install(application.controllers_router, settings)
+    docs = OpenAPIHandler(
+        info=Info(
+            title=settings.server.docs.title,
+            version=settings.server.docs.version
+        ),
+        ui_path=settings.server.docs.path,
+        json_spec_path=settings.server.docs.json_spec_path,
+        yaml_spec_path=settings.server.docs.yaml_spec_path,
+    )
     docs.bind_app(application)
 
 
 def run() -> None:
-    application, settings = configure_application()
+    settings = get_settings()
+    application = configure_application(settings)
     options = {
         'bind': '%s:%s' % (settings.server.host, settings.server.port),
         'workers': number_of_workers(),

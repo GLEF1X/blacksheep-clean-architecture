@@ -25,4 +25,3 @@ class OrderController(RegistrableApiController):
         if cls_version and cls_name.endswith(cls_version.lower()):
             cls_name = cls_name[: -len(cls_version)]
         return join_fragments("api", cls_version, cls_name)
-

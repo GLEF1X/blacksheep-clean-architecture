@@ -4,14 +4,16 @@ from typing import Any, TypeVar
 
 from blacksheep.server.controllers import ApiController
 from blacksheep.server.routing import RoutesRegistry
+from dynaconf import LazySettings
 
 _HandlerType = TypeVar("_HandlerType", bound=Callable[..., Any])
 
 
 class RegistrableApiController(ApiController):
 
-    def __init__(self, router: RoutesRegistry) -> None:
+    def __init__(self, router: RoutesRegistry, settings: LazySettings) -> None:
         self._router = router
+        self._settings = settings
 
     @abc.abstractmethod
     def register(self) -> None: ...
