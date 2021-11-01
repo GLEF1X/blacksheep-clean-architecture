@@ -6,24 +6,20 @@ authors = ["Gleb Garanin <glebgar567@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-kink = "^0.6.2"
-injector = "^0.18.4"
 SQLAlchemy = "^1.4.26"
 alembic = "^1.7.4"
 asyncpg = "^0.24.0"
-Inject = "^4.3.1"
 dynaconf = { version="^3.1.7", extras=["all"] }
 blacksheep = "^1.2.0"
-fastapi = "^0.70.0"
 uvloop = "^0.16.0"
 gunicorn = "^20.1.0"
+uvicorn = "^0.15.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-asyncio = "^0.16.0"
 mypy = "^0.910"
 sqlalchemy2-stubs = "^0.0.2-alpha.19"
-uvicorn = "^0.15.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
