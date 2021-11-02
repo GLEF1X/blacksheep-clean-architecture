@@ -12,13 +12,26 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import AsyncAdaptedQueuePool
 
+from application.use_cases.implementation.interactor.mediatorimpl import MediatorImpl
+from application.use_cases.implementation.order.commands.create_order.command import \
+    CreateOrderCommand
+from application.use_cases.implementation.order.commands.create_order.handler import \
+    CreateOrderHandler
+from application.use_cases.implementation.order.queries.get_order_by_id.handler import (
+    GetOrderByIdHandler,
+)
+from application.use_cases.implementation.order.queries.get_order_by_id.query import (
+    GetOrderByIdQuery,
+)
+from application.use_cases.interfaces.mediator import MediatorInterface
 from entities.domain_services.implementation.order_service import OrderServiceImpl
-from infrastructure.implementation.database.data_access.repository import SQLAlchemyRepository
-from infrastructure.implementation.database.data_access.unit_of_work import SQLAlchemyUnitOfWork
+from infrastructure.implementation.database.data_access.repository import (
+    SQLAlchemyRepository,
+)
+from infrastructure.implementation.database.data_access.unit_of_work import (
+    SQLAlchemyUnitOfWork,
+)
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
-from application.use_cases.interactor.mediator import Mediator
-from application.use_cases.order.queries.get_order_by_id.handler import GetOrderByIdHandler
-from application.use_cases.order.queries.get_order_by_id.query import GetOrderByIdQuery
 from web import controllers
 from web.utils.gunicorn_app import StandaloneApplication, number_of_workers
 from web.utils.routing import PrefixedRouter
@@ -62,33 +75,36 @@ def _setup_dependency_injection(
     # database
     engine = create_async_engine(
         url=make_url(settings.db.connection_uri),
-        future=True, query_cache_size=1200, pool_size=100,
-        max_overflow=200, poolclass=AsyncAdaptedQueuePool
+        future=True,
+        query_cache_size=1200,
+        pool_size=100,
+        max_overflow=200,
+        poolclass=AsyncAdaptedQueuePool,
     )
-    session_pool = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False,
-                                autoflush=False)
+    session_pool = sessionmaker(
+        bind=engine, class_=AsyncSession, expire_on_commit=False, autoflush=False
+    )
 
     # mediator
     application.services.register_factory(
-        lambda: _create_mediator(session_pool),
-        Mediator,
-        ServiceLifeStyle.SCOPED
+        lambda: _create_mediator(session_pool), MediatorInterface, ServiceLifeStyle.SCOPED
     )
 
 
-def _create_mediator(pool: sessionmaker) -> Mediator:
+def _create_mediator(pool: sessionmaker) -> MediatorInterface:
     session = pool()
     repository: SQLAlchemyRepository[Any] = SQLAlchemyRepository(session)
+    uow = SQLAlchemyUnitOfWork(session)
     order_domain_service = OrderServiceImpl(DeliveryServiceImpl())
-    return Mediator(
+    return MediatorImpl(
         query_handlers={
             GetOrderByIdQuery: [
-                GetOrderByIdHandler(
-                    repository, order_domain_service, SQLAlchemyUnitOfWork(session)
-                )
+                GetOrderByIdHandler(repository, order_domain_service, uow)
             ]
         },
-        command_handlers={}
+        command_handlers={
+            CreateOrderCommand: CreateOrderHandler(repository, uow)
+        },
     )
 
 
