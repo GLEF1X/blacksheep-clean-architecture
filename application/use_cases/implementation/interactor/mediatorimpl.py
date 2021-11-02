@@ -1,7 +1,18 @@
 import abc
 import logging
 from collections import deque
-from typing import Generic, TypeVar, Dict, Type, List, Callable, Any, Union, Deque
+from typing import (
+    Generic,
+    TypeVar,
+    Dict,
+    Type,
+    List,
+    Callable,
+    Any,
+    Union,
+    Deque,
+    Coroutine,
+)
 
 from application.use_cases.base import Command, Query
 
@@ -16,19 +27,20 @@ class BaseHandler(abc.ABC, Generic[_EventType, _ResultType]):
     async def handle(self, event: _EventType) -> _ResultType:
         ...
 
-    async def __call__(self, *args, **kwargs) -> None:
-        await self.handle(*args, **kwargs)
+    async def __call__(self, *args, **kwargs) -> _ResultType:
+        return await self.handle(*args, **kwargs)
 
 
 Event = Union[Command, Query]
 
 
-class Mediator:
-
+class MediatorImpl:
     def __init__(
-            self,
-            query_handlers: Dict[Type[Query], List[Callable[..., Any]]],
-            command_handlers: Dict[Type[Command], Callable[..., Any]],
+        self,
+        query_handlers: Dict[
+            Type[Query], List[Callable[..., Coroutine[Any, Any, Any]]]
+        ],
+        command_handlers: Dict[Type[Command], Callable[..., Coroutine[Any, Any, Any]]],
     ) -> None:
         self._query_handlers = query_handlers
         self._command_handlers = command_handlers
