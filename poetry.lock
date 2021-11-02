@@ -179,7 +179,7 @@ six = "*"
 
 [[package]]
 name = "dataclass-factory"
-version = "2.11"
+version = "2.12"
 description = "An utility class for creating instances of dataclasses"
 category = "main"
 optional = false
@@ -812,7 +812,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "901942b44fde96a741ad7f464680d1af768d2a9841db691c5d598899b5f9ab06"
+content-hash = "3ad48e6782ce6c13ee7d16f6dc8a6deb76724610549fd5ed896345235f418187"
 
 [metadata.files]
 alembic = [
@@ -916,8 +916,7 @@ configobj = [
     {file = "configobj-5.0.6.tar.gz", hash = "sha256:a2f5650770e1c87fb335af19a9b7eb73fc05ccf22144eb68db7d00cd2bcb0902"},
 ]
 dataclass-factory = [
-    {file = "dataclass_factory-2.11-py3-none-any.whl", hash = "sha256:25ece9d4ab657faa53cafa1ff5f95cceea5645a0b4be1c2c5ba3d21f729ee515"},
-    {file = "dataclass_factory-2.11.tar.gz", hash = "sha256:bddd0dcf9d64daf58529dba5ae60841892433cf8c0752d99f0be15b015f53d24"},
+    {file = "dataclass_factory-2.12-py3-none-any.whl", hash = "sha256:3e2d09aaeb4a88ac80550ad45eaf38a98eb69d94d674edde0598e69134782ad9"},
 ]
 dynaconf = [
     {file = "dynaconf-3.1.7-py2.py3-none-any.whl", hash = "sha256:f52fe5db7622da56a552275e8f64e4df46e3b4ae11158831b042e8ba2f6d1c96"},
