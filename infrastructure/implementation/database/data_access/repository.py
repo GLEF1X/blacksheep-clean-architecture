@@ -9,10 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker  # noqa
 from sqlalchemy.sql import Executable
 
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
-from .typedef import (
-    SQLAlchemyModel,
-    ExpressionType
-)
+from .typedef import SQLAlchemyModel, ExpressionType
 
 ASTERISK = "*"
 
@@ -21,28 +18,39 @@ class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
     # You need to define this variable in child classes
     model: typing.ClassVar[typing.Type[SQLAlchemyModel]]
 
-    def __init__(self, session_or_pool: typing.Union[sessionmaker, AsyncSession]) -> None:
+    def __init__(
+        self, session_or_pool: typing.Union[sessionmaker, AsyncSession]
+    ) -> None:
         if isinstance(session_or_pool, sessionmaker):
             self._session: AsyncSession = typing.cast(AsyncSession, session_or_pool())
         else:
             self._session = session_or_pool
 
-    async def add(self, **values: typing.Any) -> None:
+    async def add(self, **values: typing.Any) -> int:
         insert_stmt = insert(self.model).values(**values).on_conflict_do_nothing()
-        await self._session.execute(insert_stmt)
+        result = await self._session.execute(insert_stmt)
+        return result.scalar()
 
     async def get_all(self, *clauses: ExpressionType) -> typing.List[SQLAlchemyModel]:
         query_model = self.model
         stmt = lambda_stmt(lambda: select(query_model))
         stmt += lambda s: s.where(*clauses)
-        result = (await self._session.execute(typing.cast(Executable, stmt))).scalars().all()
+        result = (
+            (await self._session.execute(typing.cast(Executable, stmt))).scalars().all()
+        )
         return result
 
-    async def get_one(self, *clauses: ExpressionType) -> typing.Optional[SQLAlchemyModel]:
+    async def get_one(
+        self, *clauses: ExpressionType
+    ) -> typing.Optional[SQLAlchemyModel]:
         query_model = self.model
         stmt = lambda_stmt(lambda: select(query_model))
         stmt += lambda s: s.where(*clauses)
-        result = (await self._session.execute(typing.cast(Executable, stmt))).scalars().first()
+        result = (
+            (await self._session.execute(typing.cast(Executable, stmt)))
+            .scalars()
+            .first()
+        )
         return typing.cast(typing.Optional[SQLAlchemyModel], result)
 
     async def update(self, *clauses: ExpressionType, **values: typing.Any) -> None:
@@ -77,10 +85,10 @@ class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
 
 
 def make_proxy_bulk_save_func(
-        instances: typing.Sequence[typing.Any],
-        return_defaults: bool = False,
-        update_changed_only: bool = True,
-        preserve_order: bool = True,
+    instances: typing.Sequence[typing.Any],
+    return_defaults: bool = False,
+    update_changed_only: bool = True,
+    preserve_order: bool = True,
 ) -> typing.Callable[[Session], None]:
     def _proxy(session: Session) -> None:
         return session.bulk_save_objects(

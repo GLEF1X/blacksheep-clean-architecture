@@ -15,7 +15,7 @@ class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
     model: typing.ClassVar[typing.Type[EntryType]]
 
     @abc.abstractmethod
-    async def add(self, **values: typing.Any) -> None:
+    async def add(self, **values: typing.Any) -> int:
         pass
 
     @abc.abstractmethod
@@ -37,12 +37,16 @@ class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
     async def exists(self, *clauses: typing.Any) -> typing.Any:  # type: ignore
         cls_name = self.__class__.__qualname__
         raise TypeError(
-            "Repository %s does not provide way to determine is object exists or not" % cls_name)
+            "Repository %s does not provide way to determine is object exists or not"
+            % cls_name
+        )
 
     async def count(self, *clauses: typing.Any) -> typing.Any:  # type: ignore
         cls_name = self.__class__.__qualname__
         raise TypeError(
-            "Repository %s does not provide way to determine count of objects" % cls_name)
+            "Repository %s does not provide way to determine count of objects"
+            % cls_name
+        )
 
     def install(self, model: typing.Type[EntryType]):
         self.model = model

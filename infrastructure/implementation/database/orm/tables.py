@@ -48,7 +48,8 @@ class OrderModel(Order):
                 "ProductModel",
                 secondary=lambda: OrderItemModel.__table__,
                 back_populates="orders",
-                enable_typechecks=True
+                enable_typechecks=True,
+                lazy="joined",
             )
         }
     }
@@ -82,7 +83,7 @@ class ProductModel(Product):
                 "OrderModel",
                 secondary=lambda: OrderItemModel.__table__,
                 back_populates="products",
-                enable_typechecks=True
+                enable_typechecks=True,
             )
         }
     }

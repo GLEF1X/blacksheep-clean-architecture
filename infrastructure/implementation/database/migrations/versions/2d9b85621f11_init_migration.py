@@ -48,6 +48,12 @@ def schema_upgrades():
         sa.Column("price", sa.INTEGER(), nullable=False),
         sa.Column("weight", sa.SMALLINT(), server_default=sa.text("1"), nullable=False),
         sa.PrimaryKeyConstraint("id"),
+        sa.Column(
+            "created_at",
+            sa.TIMESTAMP(timezone=True),
+            server_default=sa.text("now()"),
+            nullable=False,
+        ),
     )
     # ### end Alembic commands ###
 

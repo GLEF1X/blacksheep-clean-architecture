@@ -40,7 +40,6 @@ Model = TypeVar("Model")
 
 
 class DataclassSerializer(Serializer[Model, str]):
-
     def __init__(self, class_: Type[Model]):
         self._factory = dataclass_factory.Factory()
         self._class = class_
