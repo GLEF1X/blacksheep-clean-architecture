@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import dataclasses
+from typing import Any
+
 from sqlalchemy import (
     Column,
     Identity,
@@ -21,8 +24,13 @@ from entities.models.product import Product
 mapper_registry = registry()
 
 
+class Model:
+    def __init__(self, *args: Any, **kwargs: Any):
+        ...  # for compat with linters and IDE
+
+
 @mapper_registry.mapped
-class OrderModel(Order):
+class OrderModel(Order, Model):
     __table__ = Table(
         "orders",
         mapper_registry.metadata,
@@ -56,7 +64,7 @@ class OrderModel(Order):
 
 
 @mapper_registry.mapped
-class ProductModel(Product):
+class ProductModel(Product, Model):
     __table__ = Table(
         "products",
         mapper_registry.metadata,
@@ -90,7 +98,7 @@ class ProductModel(Product):
 
 
 @mapper_registry.mapped
-class OrderItemModel(OrderItem):
+class OrderItemModel(OrderItem, Model):
     __table__ = Table(
         "order_items",
         mapper_registry.metadata,

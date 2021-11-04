@@ -29,7 +29,11 @@ class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
     async def add(self, **values: typing.Any) -> int:
         insert_stmt = insert(self.model).values(**values).on_conflict_do_nothing()
         result = await self._session.execute(insert_stmt)
-        return result.scalar()
+        return typing.cast(int, result.scalar())
+
+    async def add_many(self, *models: SQLAlchemyModel) -> None:
+        bulk_save_func = make_proxy_bulk_save_func(instances=models)
+        await self._session.run_sync(bulk_save_func)
 
     async def get_all(self, *clauses: ExpressionType) -> typing.List[SQLAlchemyModel]:
         query_model = self.model

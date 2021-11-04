@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-import abc
 import contextlib
 from typing import (
     Any,
-    Dict,
-    Generic,
     Type,
     TypeVar,
     cast,
     AsyncGenerator,
-    AsyncContextManager,
 )
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
@@ -21,24 +17,11 @@ from infrastructure.implementation.database.data_access.repository import (
 from infrastructure.implementation.database.data_access.typedef import (
     TransactionContext,
 )
-from infrastructure.interfaces.database.data_access.repository import AbstractRepository
+from infrastructure.interfaces.database.data_access.unit_of_work import (
+    AbstractUnitOfWork,
+)
 
-_Repository = TypeVar("_Repository", bound=AbstractRepository[Any])
 _T = TypeVar("_T", bound=SQLAlchemyRepository[Any])
-
-
-class AbstractUnitOfWork(abc.ABC, Generic[_Repository]):
-    def __init__(self):
-        self._repositories: Dict[str, _Repository] = {}
-
-    @property
-    @abc.abstractmethod
-    def pipeline(self) -> AsyncContextManager:  # type: ignore
-        pass
-
-    @abc.abstractmethod
-    def get_repository(self, repository_type: Type[_Repository]) -> _Repository:
-        pass
 
 
 class SQLAlchemyUnitOfWork(AbstractUnitOfWork[SQLAlchemyRepository[Any]]):

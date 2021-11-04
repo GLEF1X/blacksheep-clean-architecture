@@ -5,6 +5,8 @@ import typing
 
 EntryType = typing.TypeVar("EntryType")
 
+_T = typing.TypeVar("_T")
+
 
 class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
     """
@@ -16,6 +18,10 @@ class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
 
     @abc.abstractmethod
     async def add(self, **values: typing.Any) -> int:
+        pass
+
+    @abc.abstractmethod
+    async def add_many(self, *models: EntryType) -> None:
         pass
 
     @abc.abstractmethod
@@ -48,5 +54,8 @@ class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
             % cls_name
         )
 
-    def install(self, model: typing.Type[EntryType]):
+    def with_changed_query_model(
+        self, /, model: typing.Type[_T]
+    ) -> AbstractRepository[_T]:
         self.model = model
+        return self

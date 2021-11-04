@@ -12,18 +12,19 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import AsyncAdaptedQueuePool
 
-from application.use_cases.implementation.interactor.mediatorimpl import MediatorImpl
-from application.use_cases.implementation.order.commands.create_order.command import \
-    CreateOrderCommand
-from application.use_cases.implementation.order.commands.create_order.handler import \
-    CreateOrderHandler
-from application.use_cases.implementation.order.queries.get_order_by_id.handler import (
+from application.cqrs_lib import MediatorImpl, MediatorInterface
+from application.use_cases.order.commands.create_order.command import (
+    CreateOrderCommand,
+)
+from application.use_cases.order.commands.create_order.handler import (
+    CreateOrderHandler,
+)
+from application.use_cases.order.queries.get_order_by_id.handler import (
     GetOrderByIdHandler,
 )
-from application.use_cases.implementation.order.queries.get_order_by_id.query import (
+from application.use_cases.order.queries.get_order_by_id.query import (
     GetOrderByIdQuery,
 )
-from application.use_cases.interfaces.mediator import MediatorInterface
 from entities.domain_services.implementation.order_service import OrderServiceImpl
 from infrastructure.implementation.database.data_access.repository import (
     SQLAlchemyRepository,
@@ -33,6 +34,7 @@ from infrastructure.implementation.database.data_access.unit_of_work import (
 )
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
 from web import controllers
+from web.middlewares.error_middleware import ErrorMiddleware
 from web.utils.gunicorn_app import StandaloneApplication, number_of_workers
 from web.utils.routing import PrefixedRouter
 
@@ -62,7 +64,12 @@ def configure_application(settings: LazySettings) -> Application:
     application.controllers_router = controllers_router
     _setup_dependency_injection(application, settings)
     _setup_routes(application, settings)
+    _setup_middlewares(application)
     return application
+
+
+def _setup_middlewares(application: Application):
+    application.middlewares.append(ErrorMiddleware())
 
 
 def _setup_dependency_injection(
@@ -87,7 +94,9 @@ def _setup_dependency_injection(
 
     # mediator
     application.services.register_factory(
-        lambda: _create_mediator(session_pool), MediatorInterface, ServiceLifeStyle.SCOPED
+        lambda: _create_mediator(session_pool),
+        MediatorInterface,
+        ServiceLifeStyle.SCOPED,
     )
 
 
@@ -102,9 +111,7 @@ def _create_mediator(pool: sessionmaker) -> MediatorInterface:
                 GetOrderByIdHandler(repository, order_domain_service, uow)
             ]
         },
-        command_handlers={
-            CreateOrderCommand: CreateOrderHandler(repository, uow)
-        },
+        command_handlers={CreateOrderCommand: CreateOrderHandler(repository, uow)},
     )
 
 
