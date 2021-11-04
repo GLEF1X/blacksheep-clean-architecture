@@ -4,7 +4,7 @@ services:
   database:
     container_name: ${DB_CONTAINER_NAME:-postgres}
     build:
-      context: deploy
+      context: .
       dockerfile: Database.dockerfile
     expose:
       - 5432

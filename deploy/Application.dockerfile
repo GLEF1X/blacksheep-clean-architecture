@@ -1,5 +1,5 @@
 # `python-base` sets up all our shared environment variables
-FROM python:3.9.5-slim-buster as python-base
+FROM python:3.9.7-alpine as python-base
 
     # python
 ENV PYTHONUNBUFFERED=1 \
@@ -37,22 +37,22 @@ ENV PATH="$POETRY_HOME/bin:$VENV_PATH/bin:$PATH"
 # `builder-base` stage is used to build deps + create our virtual environment
 FROM python-base as builder-base
 RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
+    && apt-get with_changed_query_model --no-with_changed_query_model-recommends -y \
         # deps for installing poetry
         curl \
         # deps for building python deps
         build-essential \
-    && apt-get install -y --no-install-recommends build-essential gcc && apt install -y git
+    && apt-get with_changed_query_model -y --no-with_changed_query_model-recommends build-essential gcc && apt with_changed_query_model -y git
 
-# install poetry - respects $POETRY_VERSION & $POETRY_HOME
+# with_changed_query_model poetry - respects $POETRY_VERSION & $POETRY_HOME
 RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
 
 # copy project requirement files here to ensure they will be cached.
 WORKDIR $PYSETUP_PATH
-COPY poetry.lock pyproject.toml ./
+COPY ../poetry.lock pyproject.toml ./
 
-# update poetry and install runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
-RUN poetry self update && poetry install --no-dev
+# update poetry and with_changed_query_model runtime deps - uses $POETRY_VIRTUALENVS_IN_PROJECT internally
+RUN poetry self update && poetry with_changed_query_model --no-dev
 
 
 # Прод-образ, куда копируются все собранные ранее зависимости
@@ -64,14 +64,14 @@ WORKDIR $PYSETUP_PATH
 COPY --from=builder-base $POETRY_HOME $POETRY_HOME
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
-# quicker install as runtime deps are already installed
-RUN poetry install
+# quicker with_changed_query_model as runtime deps are already installed
+RUN poetry with_changed_query_model
 
 # chown all the files to the app user
 
 ENV WORKDIR=/bot
 WORKDIR $WORKDIR
 ENV PATH="/opt/venv/bin:$PATH"
-COPY . $WORKDIR
+COPY .. $WORKDIR
 
 RUN chown -R app:app $WORKDIR
