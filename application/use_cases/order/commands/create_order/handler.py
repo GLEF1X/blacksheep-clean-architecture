@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import Any
 
 from application.cqrs_lib.handler import BaseHandler
+from application.cqrs_lib.result import Result
 from application.use_cases.order.commands.create_order.command import (
     CreateOrderCommand,
 )
@@ -14,7 +15,7 @@ from infrastructure.interfaces.database.data_access.unit_of_work import (
 )
 
 
-class CreateOrderHandler(BaseHandler[CreateOrderCommand, int]):
+class CreateOrderHandler(BaseHandler[CreateOrderCommand, Result[int]]):
     def __init__(
         self,
         repository: AbstractRepository[Order],
@@ -23,7 +24,7 @@ class CreateOrderHandler(BaseHandler[CreateOrderCommand, int]):
         self._repository = repository
         self._uow = uow
 
-    async def handle(self, event: CreateOrderCommand) -> int:
+    async def handle(self, event: CreateOrderCommand) -> Result[int]:
         async with self._uow.pipeline:
             order_id = await self._repository.with_changed_query_model(OrderModel).add(
                 order_date=event.create_order_dto.order_date
@@ -40,4 +41,4 @@ class CreateOrderHandler(BaseHandler[CreateOrderCommand, int]):
                 *models_to_insert_in_m2m
             )
 
-        return order_id
+        return Result.success(order_id)

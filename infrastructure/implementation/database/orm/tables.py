@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import dataclasses
-from typing import Any
-
 from sqlalchemy import (
     Column,
     Identity,
@@ -25,8 +22,7 @@ mapper_registry = registry()
 
 
 class Model:
-    def __init__(self, *args: Any, **kwargs: Any):
-        ...  # for compat with linters and IDE
+    __init__ = mapper_registry.constructor
 
 
 @mapper_registry.mapped

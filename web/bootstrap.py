@@ -81,7 +81,7 @@ def _setup_middlewares(application: Application):
 
 
 def _setup_dependency_injection(
-        application: Application, settings: LazySettings
+    application: Application, settings: LazySettings
 ) -> None:
     # controller dependencies
     application.services.add_instance(application.controllers_router, RoutesRegistry)
@@ -124,7 +124,7 @@ def _create_mediator(pool: sessionmaker) -> MediatorInterface:
 
 
 def _setup_routes(
-        application: ApplicationWithPrefixedRouter, settings: LazySettings
+    application: ApplicationWithPrefixedRouter, settings: LazySettings
 ) -> None:
     controllers.install(application.controllers_router, settings)
     docs = OpenAPIHandler(

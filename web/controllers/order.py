@@ -4,6 +4,7 @@ from typing import Optional
 from blacksheep import Response
 from blacksheep.server.bindings import FromJSON
 
+from application.cqrs_lib.result import Result
 from application.use_cases.order.commands.create_order.command import (
     CreateOrderCommand,
 )
@@ -22,8 +23,10 @@ class OrderController(RegistrableApiController):
         self.add_route("DELETE", "/delete/{order_id}", self.delete_order)
 
     async def get_order(self, order_id: int) -> Response:
-        order: ObtainedOrderDto = await self._mediator.handle(GetOrderByIdQuery(id=order_id))
-        return self.pretty_json(order)
+        order: Result[ObtainedOrderDto] = await self._mediator.handle(
+            GetOrderByIdQuery(id=order_id)
+        )
+        return self.pretty_json(order.value)
 
     async def create_order(self, gasket: FromJSON[CreateOrderDto]) -> Response:
         create_order_dto = gasket.value

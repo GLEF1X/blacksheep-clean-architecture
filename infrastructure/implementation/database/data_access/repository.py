@@ -27,7 +27,7 @@ class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
             self._session = session_or_pool
 
     async def add(self, **values: typing.Any) -> int:
-        insert_stmt = insert(self.model).values(**values).on_conflict_do_nothing()
+        insert_stmt = insert(self.model).values(**values)
         result = await self._session.execute(insert_stmt)
         return typing.cast(int, result.scalar())
 

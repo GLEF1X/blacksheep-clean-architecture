@@ -10,4 +10,5 @@ Event = Union[Command[_TProcessingResult], Query[_TProcessingResult]]
 
 
 class MediatorInterface(Protocol):
-    async def handle(self, event: Event) -> _TProcessingResult: ...
+    async def handle(self, event: Event) -> _TProcessingResult:
+        ...
