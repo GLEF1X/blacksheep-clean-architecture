@@ -17,6 +17,8 @@ uvicorn = "^0.15.0"
 ujson = "^4.2.0"
 pydantic = "^1.8.2"
 dataclass-factory = "^2.12"
+orjson = "^3.6.4"
+loguru = "^0.5.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"

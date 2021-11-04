@@ -8,7 +8,11 @@ reload = true
 api_version = "v1"
 api_path = "@format /api/{this.web.api_version}"
 show_error_details = true
-debug = true
+is_production = false
+
+[default.web.logs]
+ignore_loggers = [""]
+logging_level = "DEBUG"
 
 [default.web.docs]
 path = "@format {this.web.api_path}/docs"

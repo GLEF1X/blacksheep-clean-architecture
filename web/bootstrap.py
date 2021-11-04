@@ -33,10 +33,15 @@ from infrastructure.implementation.database.data_access.unit_of_work import (
     SQLAlchemyUnitOfWork,
 )
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
+from utils.logging.gunicorn import (
+    configure_gunicorn_logger_adapter,
+    StubbedGunicornLogger,
+)
 from web import controllers
+from web.events import on_startup, on_shutdown
 from web.middlewares.error_middleware import ErrorMiddleware
-from web.utils.gunicorn_app import StandaloneApplication, number_of_workers
-from web.utils.routing import PrefixedRouter
+from web.web_utils.gunicorn_app import StandaloneApplication, number_of_workers
+from web.web_utils.routing import PrefixedRouter
 
 BASE_DIR = pathlib.Path(__name__).resolve().parent.parent
 
@@ -59,8 +64,11 @@ def get_settings() -> LazySettings:
 def configure_application(settings: LazySettings) -> Application:
     controllers_router = RoutesRegistry()
     application = ApplicationWithPrefixedRouter(
-        debug=settings.web.debug, show_error_details=settings.web.show_error_details
+        debug=settings.web.is_production,
+        show_error_details=settings.web.show_error_details,
     )
+    application.on_start += on_startup
+    application.on_stop += on_shutdown
     application.controllers_router = controllers_router
     _setup_dependency_injection(application, settings)
     _setup_routes(application, settings)
@@ -135,7 +143,16 @@ def run() -> None:
         "bind": "%s:%s" % (settings.web.host, settings.web.port),
         "workers": number_of_workers(),
         "worker_class": "uvicorn.workers.UvicornWorker",
+        "accesslog": "-",
+        "errorlog": "-",
+        "logger_class": StubbedGunicornLogger,
+        "reload": True,
+        "access_log_format": "%(h)s %(l)s %(u)s %(t)s %(r)s %(s)s %(b)s %(f)s %(a)s",
     }
+    configure_gunicorn_logger_adapter(
+        logging_level=settings.web.logs.logging_level,
+        serialize_records=settings.web.is_production,
+    )
     gunicorn_app = StandaloneApplication(application, options)
     gunicorn_app.run()
 
