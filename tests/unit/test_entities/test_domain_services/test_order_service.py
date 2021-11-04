@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from entities.domain_services.implementation.order_service import OrderServiceImpl
+from entities.domain_services.implementation import OrderServiceImpl
 from entities.models.order import Order
 from entities.models.product import Product
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
