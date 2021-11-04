@@ -11,5 +11,6 @@ class OrderItem:
     id: int
     order_id: int
     product_id: int
+    quantity: int
     product: Product
     order: Order

@@ -26,6 +26,7 @@ sqlalchemy2-stubs = "^0.0.2-alpha.19"
 flake8 = "^4.0.1"
 black = "^21.10b0"
 types-ujson = "^4.2.0"
+pydantic = "^1.8.2"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

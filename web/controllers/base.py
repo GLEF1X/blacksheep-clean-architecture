@@ -6,7 +6,7 @@ from blacksheep.server.controllers import ApiController
 from blacksheep.server.routing import RoutesRegistry
 from dynaconf import LazySettings
 
-from application.use_cases.interfaces.mediator import MediatorInterface
+from application.cqrs_lib import MediatorInterface
 
 _HandlerType = TypeVar("_HandlerType", bound=Callable[..., Any])
 
@@ -24,9 +24,27 @@ class RegistrableApiController(ApiController):
 
     @abc.abstractmethod
     def register(self) -> None:
+        """
+        There is the place, where you can register your routes.
+        The main goal of creating this method is getting rid of global variables and decorators.
+        To my mind, It's descriptive to register routes exactly in controller.
+
+        """
         ...
 
-    def add_route(self, method: str, path: str, controller_method: Callable[..., Any]) -> None:
+    def add_route(
+        self, method: str, path: str, controller_method: Callable[..., Any]
+    ) -> None:
+        """
+        Helps to add new route to router, justify patching controller methods.
+        This method must be here, because metaclass of `ApiController` rely on decorators,
+        that's why registering a new route is too problematic.
+
+
+        :param method: HTTP method
+        :param path: relative path to endpoint
+        :param controller_method:
+        """
         handler_func = controller_method.__func__  # noqa  # type: ignore
         self._router.add(
             method, path, self._mark_handler_as_method_of_controller(handler_func)
