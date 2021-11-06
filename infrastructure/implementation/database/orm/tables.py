@@ -1,28 +1,32 @@
 from __future__ import annotations
 
 from sqlalchemy import (
-    Column,
-    Identity,
-    TIMESTAMP,
-    func,
-    SMALLINT,
     INTEGER,
-    text,
-    Table,
+    SMALLINT,
+    TIMESTAMP,
+    VARCHAR,
+    Column,
     ForeignKey,
+    Identity,
     Integer,
+    Table,
+    func,
+    text,
 )
 from sqlalchemy.orm import registry, relationship
+from sqlalchemy.sql import expression
 
 from entities.models.order import Order
 from entities.models.order_item import OrderItem
 from entities.models.product import Product
+from entities.models.user import User
 
 mapper_registry = registry()
 
 
 class Model:
     __init__ = mapper_registry.constructor
+    __table__: Table
 
 
 @mapper_registry.mapped
@@ -85,7 +89,7 @@ class ProductModel(Product, Model):
         "properties": {
             "orders": relationship(
                 "OrderModel",
-                secondary=lambda: OrderItemModel.__table__,
+                secondary=lambda: OrderItemModel.__table__,  # type: ignore
                 back_populates="products",
                 enable_typechecks=True,
             )
@@ -128,4 +132,28 @@ class OrderItemModel(OrderItem, Model):
             ),
         ),
         Column("quantity", SMALLINT, nullable=False, server_default=text("1")),
+    )
+
+
+@mapper_registry.mapped
+class UserModel(User, Model):
+    __table__ = Table(
+        "users",
+        mapper_registry.metadata,
+        Column(
+            "id",
+            INTEGER,
+            Identity(always=True, cache=5),
+            nullable=False,
+            primary_key=True,
+        ),
+        Column("first_name", VARCHAR(200), nullable=False),
+        Column("last_name", VARCHAR(200), nullable=False),
+        Column("username", VARCHAR(200), nullable=False),
+        Column(
+            "hashed_password",
+            VARCHAR(200),
+            server_default=expression.null(),
+            nullable=True,
+        ),
     )
