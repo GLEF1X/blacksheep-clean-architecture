@@ -19,6 +19,9 @@ pydantic = "^1.8.2"
 dataclass-factory = "^2.12"
 orjson = "^3.6.4"
 loguru = "^0.5.3"
+guardpost = "^0.0.8"
+PyJWT = "^2.3.0"
+py-bcrypt = "^0.4"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -29,6 +32,7 @@ flake8 = "^4.0.1"
 black = "^21.10b0"
 types-ujson = "^4.2.0"
 pydantic = "^1.8.2"
+isort = "^5.10.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
