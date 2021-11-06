@@ -1,13 +1,7 @@
 from __future__ import annotations
 
 import contextlib
-from typing import (
-    Any,
-    Type,
-    TypeVar,
-    cast,
-    AsyncGenerator,
-)
+from typing import Any, AsyncGenerator, Type, TypeVar, cast
 
 from sqlalchemy.ext.asyncio import AsyncSession, AsyncSessionTransaction
 

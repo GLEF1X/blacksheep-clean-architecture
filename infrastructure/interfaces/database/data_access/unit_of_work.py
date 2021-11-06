@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import abc
-from typing import TypeVar, Any, Generic, Dict, AsyncContextManager, Type
+from typing import Any, AsyncContextManager, Dict, Generic, Type, TypeVar
 
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
 
