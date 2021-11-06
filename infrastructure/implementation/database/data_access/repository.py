@@ -9,18 +9,18 @@ from sqlalchemy.orm import Session, sessionmaker  # noqa
 from sqlalchemy.sql import Executable
 
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
-from .typedef import SQLAlchemyModel, ExpressionType
+from .typedef import ExpressionType, SQLAlchemyModel
 
 ASTERISK = "*"
 
 
 class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
-    # You need to define this variable in child classes
-    model: typing.ClassVar[typing.Type[SQLAlchemyModel]]
-
     def __init__(
-        self, session_or_pool: typing.Union[sessionmaker, AsyncSession]
+        self,
+        session_or_pool: typing.Union[sessionmaker, AsyncSession],
+        model: typing.Optional[typing.Type[SQLAlchemyModel]] = None,
     ) -> None:
+        AbstractRepository.__init__(self, model)
         if isinstance(session_or_pool, sessionmaker):
             self._session: AsyncSession = typing.cast(AsyncSession, session_or_pool())
         else:
@@ -62,7 +62,7 @@ class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
         Update values in database, filter by `telegram_id`
 
         :param clauses: where conditionals
-        :param values: key/value for update
+        :param values: key/value for process_window_changed_size
         :return:
         """
         stmt = update(self.model).where(*clauses).values(**values).returning(None)
