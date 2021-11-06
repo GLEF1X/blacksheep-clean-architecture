@@ -9,7 +9,7 @@ class OrderServiceImpl:
         self._delivery_service = delivery_service
 
     def get_total(self, order: Order) -> float:
-        total_price = order.get_order_price()
+        total_price = sum(product.price for product in order.products)
         delivery_cost = 0.00
         if total_price < 1000:
             total_weight = sum(product.weight for product in order.products)

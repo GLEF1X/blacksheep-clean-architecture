@@ -1,9 +1,10 @@
 import asyncio
+import pathlib
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from dynaconf import Dynaconf
+from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine
 
@@ -12,15 +13,25 @@ from infrastructure.implementation.database.orm import tables
 config = context.config
 fileConfig(config.config_file_name)
 target_metadata = tables.mapper_registry.metadata
+
+BASE_DIR = pathlib.Path(__name__).resolve().parent.parent.parent.parent.parent
+
+project_settings = Dynaconf(
+    settings_files=["settings.toml", ".secrets.toml"],
+    preload=[BASE_DIR / "settings.toml"],
+    environments=["development", "production", "testing"],
+    auto_cast=True,
+)
+
 config.set_main_option(
     "sqlalchemy.url",
     str(
         URL.create(
             drivername="postgresql+asyncpg",
-            username="postgres",
-            password="postgres",
-            host="localhost",
-            database="clean_architecture_db",
+            username=project_settings.db.user,
+            password=project_settings.db.password,
+            host=project_settings.db.host,
+            database=project_settings.db.database,
         )
     ),
 )

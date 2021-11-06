@@ -5,8 +5,7 @@ from typing import Any
 from application.cqrs_lib.handler import BaseHandler
 from application.cqrs_lib.result import Result
 from application.use_cases.order.commands.delete_order.command import DeleteOrderCommand
-from entities.models.order import Order
-from infrastructure.implementation.database.orm.tables import OrderModel, OrderItemModel
+from infrastructure.implementation.database.orm.tables import OrderItemModel, OrderModel
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
 from infrastructure.interfaces.database.data_access.unit_of_work import (
     AbstractUnitOfWork,
@@ -16,7 +15,7 @@ from infrastructure.interfaces.database.data_access.unit_of_work import (
 class CreateOrderHandler(BaseHandler[DeleteOrderCommand, Result[None]]):
     def __init__(
         self,
-        repository: AbstractRepository[Order],
+        repository: AbstractRepository[OrderModel],
         uow: AbstractUnitOfWork[Any],
     ) -> None:
         self._repository = repository
@@ -25,7 +24,7 @@ class CreateOrderHandler(BaseHandler[DeleteOrderCommand, Result[None]]):
     async def handle(self, event: DeleteOrderCommand) -> Result[None]:
         async with self._uow.pipeline:
             await self._repository.with_changed_query_model(OrderModel).delete(
-                OrderModel.id == event
+                OrderModel.id == event.order_id
             )
             await self._repository.with_changed_query_model(OrderItemModel).delete(
                 OrderItemModel.order_id == event.order_id

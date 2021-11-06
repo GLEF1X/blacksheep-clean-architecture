@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any, AnyStr
 
-from blacksheep.server.routing import Router, Route
+from blacksheep.server.routing import Route, Router
 from blacksheep.utils import ensure_bytes
 
 

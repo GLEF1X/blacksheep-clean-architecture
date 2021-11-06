@@ -1,7 +1,7 @@
 import logging
 import os
 import sys
-from typing import no_type_check, Union
+from typing import Union, no_type_check
 
 import gunicorn.glogging
 from loguru import logger

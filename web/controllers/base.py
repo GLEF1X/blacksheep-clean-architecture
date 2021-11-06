@@ -3,6 +3,7 @@ from collections import Callable
 from typing import Any, TypeVar
 
 from blacksheep.server.controllers import ApiController
+from blacksheep.server.openapi.v3 import OpenAPIHandler
 from blacksheep.server.routing import RoutesRegistry
 from dynaconf import LazySettings
 
@@ -17,10 +18,12 @@ class RegistrableApiController(ApiController):
         router: RoutesRegistry,
         settings: LazySettings,
         mediator: MediatorInterface,
+        docs: OpenAPIHandler,
     ) -> None:
         self._router = router
         self._settings = settings
         self._mediator = mediator
+        self._docs = docs
 
     @abc.abstractmethod
     def register(self) -> None:
@@ -39,7 +42,6 @@ class RegistrableApiController(ApiController):
         Helps to add new route to router, justify patching controller methods.
         This method must be here, because metaclass of `ApiController` rely on decorators,
         that's why registering a new route is too problematic.
-
 
         :param method: HTTP method
         :param path: relative path to endpoint

@@ -4,11 +4,8 @@ from typing import Any
 
 from application.cqrs_lib.handler import BaseHandler
 from application.cqrs_lib.result import Result
-from application.use_cases.order.commands.create_order.command import (
-    CreateOrderCommand,
-)
-from entities.models.order import Order
-from infrastructure.implementation.database.orm.tables import OrderModel, OrderItemModel
+from application.use_cases.order.commands.create_order.command import CreateOrderCommand
+from infrastructure.implementation.database.orm.tables import OrderItemModel, OrderModel
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
 from infrastructure.interfaces.database.data_access.unit_of_work import (
     AbstractUnitOfWork,
@@ -18,7 +15,7 @@ from infrastructure.interfaces.database.data_access.unit_of_work import (
 class CreateOrderHandler(BaseHandler[CreateOrderCommand, Result[int]]):
     def __init__(
         self,
-        repository: AbstractRepository[Order],
+        repository: AbstractRepository[OrderModel],
         uow: AbstractUnitOfWork[Any],
     ) -> None:
         self._repository = repository

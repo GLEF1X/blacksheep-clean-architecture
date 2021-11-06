@@ -3,15 +3,15 @@ from __future__ import annotations
 from datetime import datetime
 from typing import List
 
-from pydantic import BaseModel, PositiveInt, Field, PositiveFloat
-
-from entities.models.product import Product
+from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 
 GREATER_THAN_1 = 1
 
 
-class ObtainedProductDto(BaseModel, Product):
-    pass
+class ObtainedProductDto(BaseModel):
+    price: float
+    weight: int
+    id: int
 
 
 class CreateProductDto(BaseModel):

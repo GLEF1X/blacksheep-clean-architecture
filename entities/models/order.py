@@ -7,13 +7,10 @@ from typing import List
 from entities.models.product import Product
 
 
+# Anemic model, avoid creating rich model
 @dataclasses.dataclass()
 class Order:
     products: List[Product]
     created_at: datetime
     order_date: datetime
     id: int = dataclasses.field(init=False)
-
-    # GRASP Information Expert pattern
-    def get_order_price(self) -> float:
-        return sum(product.price for product in self.products)

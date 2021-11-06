@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import multiprocessing
-from typing import Any, Optional, Dict
+from typing import Any, Dict, Optional
 
 from gunicorn.app.base import Application
 

@@ -1,19 +1,11 @@
-import logging
-from typing import (
-    Dict,
-    Type,
-    List,
-    Callable,
-    Any,
-    Coroutine,
-)
+from typing import Any, Callable, Coroutine, Dict, List, Type
+
+from loguru import logger
 
 from application.cqrs_lib.command import Command
 from application.cqrs_lib.exceptions import EventOrCommandNotFound
 from application.cqrs_lib.mediator.interface import Event
 from application.cqrs_lib.query import Query
-
-logger = logging.getLogger(__name__)
 
 
 class MediatorImpl:
@@ -38,10 +30,10 @@ class MediatorImpl:
     async def handle_query(self, event: Query) -> Any:
         for handler in self._query_handlers[type(event)]:
             try:
-                logger.debug("handling event %s with handler %s", event, handler)
+                logger.debug("handling event {0} with handler {1}", event, handler)
                 return await handler(event)
             except Exception as ex:
-                logger.exception("Exception %s handling event %s", repr(ex), event)
+                logger.exception("Exception {0} handling event {1}", repr(ex), event)
                 continue
 
     async def handle_command(self, command: Command) -> Any:
@@ -50,5 +42,5 @@ class MediatorImpl:
             handler = self._command_handlers[type(command)]
             return await handler(command)
         except Exception:
-            logger.exception("Exception handling command %s", command)
+            logger.exception("Exception handling command {0}", command)
             raise

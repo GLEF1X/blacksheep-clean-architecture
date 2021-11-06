@@ -1,4 +1,5 @@
 import abc
+from typing import Any
 
 from application.cqrs_lib.handler import BaseHandler, _EventType, _ResultType
 
@@ -8,5 +9,5 @@ class HandlerDecorator(BaseHandler[_EventType, _ResultType], abc.ABC):
         self._wrapped_handler = handler
 
     @abc.abstractmethod
-    async def handle(self, event: _EventType) -> _ResultType:
+    async def handle(self, event: _EventType) -> Any:  # type: ignore
         pass

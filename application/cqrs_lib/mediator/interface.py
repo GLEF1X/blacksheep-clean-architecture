@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Protocol, Union, TypeVar
+from typing import Protocol, TypeVar, Union
 
 from application.cqrs_lib.command import Command
 from application.cqrs_lib.query import Query
