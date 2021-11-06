@@ -12,16 +12,15 @@ from datetime import datetime
 from sqlalchemy import delete, true
 
 from infrastructure.implementation.database.orm.tables import (
-    ProductModel,
-    OrderModel,
     OrderItemModel,
+    OrderModel,
+    ProductModel,
 )
 
 revision = "d1cd89e2cc41"
 down_revision = "2df077842216"
 
-from alembic import context
-from alembic import op
+from alembic import context, op
 
 
 def upgrade():
