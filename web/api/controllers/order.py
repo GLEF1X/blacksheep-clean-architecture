@@ -9,7 +9,7 @@ from application.use_cases.order.commands.create_order.command import CreateOrde
 from application.use_cases.order.commands.delete_order.command import DeleteOrderCommand
 from application.use_cases.order.dto.order_dto import CreateOrderDto
 from application.use_cases.order.queries.get_order_by_id.query import GetOrderByIdQuery
-from web.controllers.base import RegistrableApiController
+from web.api.controllers.base import RegistrableApiController
 
 AnyResult = Result[Any]
 

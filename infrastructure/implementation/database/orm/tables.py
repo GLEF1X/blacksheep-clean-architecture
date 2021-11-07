@@ -48,6 +48,13 @@ class OrderModel(Order, Model):
             nullable=False,
         ),
         Column("order_date", TIMESTAMP(timezone=True), nullable=False),
+        Column(
+            "user_id",
+            ForeignKey(
+                "users.id",
+                name="FK__order_items_user",
+            ),
+        ),
     )
 
     __mapper_args__ = {  # type: ignore
@@ -58,7 +65,14 @@ class OrderModel(Order, Model):
                 back_populates="orders",
                 enable_typechecks=True,
                 lazy="joined",
-            )
+            ),
+            "user": relationship(
+                "UserModel",
+                back_populates="orders",
+                enable_typechecks=True,
+                lazy="joined",
+                uselist=False,
+            ),
         }
     }
 
@@ -157,3 +171,13 @@ class UserModel(User, Model):
             nullable=True,
         ),
     )
+
+    __mapper_args__ = {  # type: ignore
+        "properties": {
+            "orders": relationship(
+                "OrderModel",
+                back_populates="user",
+                enable_typechecks=True,
+            )
+        }
+    }

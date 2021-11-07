@@ -1,8 +1,10 @@
+from typing import cast
+
 import bcrypt
 
 
-def get_hashed_password(plain_text_password: str):
-    return bcrypt.hashpw(plain_text_password, bcrypt.gensalt())
+def get_hashed_password(plain_text_password: str) -> str:
+    return cast(str, bcrypt.hashpw(plain_text_password, bcrypt.gensalt()))
 
 
 def is_password_verified(plain_text_password: str, hashed_password: str) -> bool:

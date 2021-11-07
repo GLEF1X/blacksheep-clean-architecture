@@ -120,6 +120,18 @@ typing-extensions = {version = "*", markers = "python_version < \"3.8\""}
 full = ["cryptography (>=3.4.6,<3.5.0)"]
 
 [[package]]
+name = "blacksheep-prometheus"
+version = "0.1.6"
+description = "Prometheus integration for blacksheep"
+category = "dev"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+blacksheep = ">=1.0.7"
+prometheus-client = ">=0.11.0"
+
+[[package]]
 name = "cchardet"
 version = "2.1.7"
 description = "cChardet is high speed universal character encoding detector."
@@ -176,14 +188,6 @@ python-versions = "*"
 
 [package.dependencies]
 six = "*"
-
-[[package]]
-name = "dataclass-factory"
-version = "2.12"
-description = "An utility class for creating instances of dataclasses"
-category = "main"
-optional = false
-python-versions = ">=3.6"
 
 [[package]]
 name = "dynaconf"
@@ -520,6 +524,17 @@ importlib-metadata = {version = ">=0.12", markers = "python_version < \"3.8\""}
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
+name = "prometheus-client"
+version = "0.12.0"
+description = "Python client for the Prometheus monitoring system."
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
+
+[package.extras]
+twisted = ["twisted"]
 
 [[package]]
 name = "py"
@@ -882,7 +897,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "ddc7a4f59b112a415a7e35db4548f5155da547dfef6795dae0ef0320d67cca57"
+content-hash = "00eb8508cf291d3307e28b357e86e89e87ce77529cafe9590afa2a5fd5b48506"
 
 [metadata.files]
 alembic = [
@@ -935,6 +950,10 @@ blacksheep = [
     {file = "blacksheep-1.2.0-cp39-cp39-win_amd64.whl", hash = "sha256:506914d4d993d59c316d32692b22d53ff306283de77769eb74e6d705d0f10305"},
     {file = "blacksheep-1.2.0.tar.gz", hash = "sha256:f8c6a392c2cac410a3ee5f1933ff96505c44127d1d4cf6712ecc85deb7cec056"},
 ]
+blacksheep-prometheus = [
+    {file = "blacksheep-prometheus-0.1.6.tar.gz", hash = "sha256:de18ee103a2a0dfc95b5ac317f1ce176ac299211c0ba1afa082c8b4f8a66f3c6"},
+    {file = "blacksheep_prometheus-0.1.6-py3-none-any.whl", hash = "sha256:9bcf226d477e4ad119d6d3cac07472baf49a514a61409a4d0150d181d17415a2"},
+]
 cchardet = [
     {file = "cchardet-2.1.7-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:c6f70139aaf47ffb94d89db603af849b82efdf756f187cdd3e566e30976c519f"},
     {file = "cchardet-2.1.7-cp36-cp36m-manylinux1_i686.whl", hash = "sha256:5a25f9577e9bebe1a085eec2d6fdd72b7a9dd680811bba652ea6090fb2ff472f"},
@@ -984,9 +1003,6 @@ colorama = [
 ]
 configobj = [
     {file = "configobj-5.0.6.tar.gz", hash = "sha256:a2f5650770e1c87fb335af19a9b7eb73fc05ccf22144eb68db7d00cd2bcb0902"},
-]
-dataclass-factory = [
-    {file = "dataclass_factory-2.12-py3-none-any.whl", hash = "sha256:3e2d09aaeb4a88ac80550ad45eaf38a98eb69d94d674edde0598e69134782ad9"},
 ]
 dynaconf = [
     {file = "dynaconf-3.1.7-py2.py3-none-any.whl", hash = "sha256:f52fe5db7622da56a552275e8f64e4df46e3b4ae11158831b042e8ba2f6d1c96"},
@@ -1263,6 +1279,10 @@ platformdirs = [
 pluggy = [
     {file = "pluggy-1.0.0-py2.py3-none-any.whl", hash = "sha256:74134bbf457f031a36d68416e1509f34bd5ccc019f0bcc952c7b909d06b37bd3"},
     {file = "pluggy-1.0.0.tar.gz", hash = "sha256:4224373bacce55f955a878bf9cfa763c1e360858e330072059e10bad68531159"},
+]
+prometheus-client = [
+    {file = "prometheus_client-0.12.0-py2.py3-none-any.whl", hash = "sha256:317453ebabff0a1b02df7f708efbab21e3489e7072b61cb6957230dd004a0af0"},
+    {file = "prometheus_client-0.12.0.tar.gz", hash = "sha256:1b12ba48cee33b9b0b9de64a1047cbd3c5f2d0ab6ebcead7ddda613a750ec3c5"},
 ]
 py = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},

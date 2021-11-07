@@ -1,7 +1,6 @@
-import dataclasses
+from pydantic import BaseModel
 
 
-@dataclasses.dataclass()
-class OauthFormInput:
+class OauthFormInput(BaseModel):
     username: str
     password: str

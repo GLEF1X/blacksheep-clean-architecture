@@ -14,7 +14,7 @@ class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
 
     """
 
-    def __init__(self, model: typing.Optional[typing.Type[EntryType]] = None) -> None:
+    def __init__(self, model: typing.Type[EntryType] = None) -> None:
         self.model = model
 
     @abc.abstractmethod

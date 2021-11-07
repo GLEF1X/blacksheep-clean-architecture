@@ -11,7 +11,7 @@ from sqlalchemy.sql import Executable
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
 from .typedef import ExpressionType, SQLAlchemyModel
 
-ASTERISK = "*"
+ASTERISK: typing.Final[str] = "*"
 
 
 class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
@@ -58,13 +58,6 @@ class SQLAlchemyRepository(AbstractRepository[SQLAlchemyModel]):
         return typing.cast(typing.Optional[SQLAlchemyModel], result)
 
     async def update(self, *clauses: ExpressionType, **values: typing.Any) -> None:
-        """
-        Update values in database, filter by `telegram_id`
-
-        :param clauses: where conditionals
-        :param values: key/value for process_window_changed_size
-        :return:
-        """
         stmt = update(self.model).where(*clauses).values(**values).returning(None)
         await self._session.execute(stmt)
         return None

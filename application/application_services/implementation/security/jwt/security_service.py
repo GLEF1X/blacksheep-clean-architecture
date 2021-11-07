@@ -6,17 +6,20 @@ import jwt
 from application.application_services.dto.auth_response import AuthCredentials
 from application.application_services.dto.form_data import FormData
 from application.application_services.dto.issued_token import IssuedTokenDto
+from application.application_services.dto.user_dto import UserDto
 from application.application_services.implementation.security.jwt.exceptions import (
     APITokenOmittedException,
     JWTSubNotExists,
     MalformedAPIToken,
     UserNotRegistered,
+    IncorrectPassword,
 )
 from application.application_services.interfaces.security.jwt.security_service import (
     SecurityService,
 )
 from infrastructure.implementation.database.orm.tables import UserModel
 from infrastructure.interfaces.database.data_access.repository import AbstractRepository
+from utils.security.password_hashing import is_password_verified
 
 DEFAULT_ACCESS_TOKEN_EXPIRE_MINUTES: Final[float] = 30
 
@@ -31,11 +34,11 @@ class SecurityServiceImpl(SecurityService):
     """
 
     def __init__(
-        self,
-        user_repository: AbstractRepository[UserModel],
-        secret_key: str,
-        encoding_algorithm: str,
-        token_expires_in_minutes: float = DEFAULT_ACCESS_TOKEN_EXPIRE_MINUTES,
+            self,
+            user_repository: AbstractRepository[UserModel],
+            secret_key: str,
+            encoding_algorithm: str,
+            token_expires_in_minutes: float = DEFAULT_ACCESS_TOKEN_EXPIRE_MINUTES,
     ) -> None:
         self._user_repository = user_repository
         self._secret_key = secret_key
@@ -47,10 +50,16 @@ class SecurityServiceImpl(SecurityService):
             self._user_repository.model.username == form_data.username
         )
         if issuer is None:
-            raise UserNotRegistered(
-                f"User with username={form_data.username} not found."
+            raise UserNotRegistered(f"User with username={form_data.username} not found.")
+        if not is_password_verified(form_data.password, issuer.hashed_password):
+            raise IncorrectPassword("Password is incorrect! Try again.")
+        return IssuedTokenDto(
+            api_token=self._generate_jwt_token(form_data),
+            issuer=UserDto(
+                id=issuer.id, first_name=issuer.first_name, last_name=issuer.last_name,
+                username=issuer.username, email=issuer.email
             )
-        return IssuedTokenDto(token=self._generate_jwt_token(form_data), issuer=issuer)
+        )
 
     async def authenticate(self, authorization_header: str) -> AuthCredentials:
         if not authorization_header:
@@ -65,9 +74,7 @@ class SecurityServiceImpl(SecurityService):
         except KeyError:
             raise JWTSubNotExists('"sub" in encoded jwt token does not exists.')
 
-        user = await self._user_repository.get_one(
-            self._user_repository.model.username == subject
-        )
+        user = await self._user_repository.get_one(self._user_repository.model.username == subject)
         if user is None:
             raise UserNotRegistered(
                 f"JWT authentication failed. User with username={subject} not found."
@@ -92,4 +99,5 @@ class SecurityServiceImpl(SecurityService):
             "exp": datetime.utcnow() + self._token_expires,
             **kwargs,
         }
-        return jwt.encode(payload, self._secret_key, self._encoding_algorithm)
+        filtered_payload = {k: v for k, v in payload.items() if v is not None}
+        return jwt.encode(filtered_payload, self._secret_key, self._encoding_algorithm)

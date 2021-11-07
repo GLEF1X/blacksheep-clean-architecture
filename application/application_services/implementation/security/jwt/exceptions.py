@@ -17,3 +17,7 @@ class MalformedAPIToken(SecurityException):
 
 class JWTSubNotExists(SecurityException):
     pass
+
+
+class IncorrectPassword(SecurityException):
+    pass
