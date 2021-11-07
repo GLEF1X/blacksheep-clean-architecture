@@ -5,12 +5,15 @@ from datetime import datetime
 from typing import List
 
 from entities.models.product import Product
+from entities.models.user import User
 
 
-# Anemic model, avoid creating rich model
 @dataclasses.dataclass()
 class Order:
+    """Anemic model, avoid creating rich model"""
+
     products: List[Product]
     created_at: datetime
     order_date: datetime
+    customer: User
     id: int = dataclasses.field(init=False)

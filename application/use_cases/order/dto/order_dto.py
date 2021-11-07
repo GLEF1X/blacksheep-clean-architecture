@@ -14,6 +14,11 @@ class ObtainedProductDto(BaseModel):
     id: int
 
 
+class CustomerDto(BaseModel):
+    id: int
+    username: str
+
+
 class CreateProductDto(BaseModel):
     id: PositiveInt
     quantity: int = Field(..., ge=GREATER_THAN_1)
@@ -25,6 +30,7 @@ class ObtainedOrderDto(BaseModel):
     total: PositiveFloat
     order_date: datetime
     created_at: datetime
+    customer: CustomerDto
 
 
 class CreateOrderDto(BaseModel):

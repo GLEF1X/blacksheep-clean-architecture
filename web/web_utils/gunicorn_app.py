@@ -17,11 +17,13 @@ class StandaloneApplication(Application):
         super(StandaloneApplication, self).__init__()
 
     def load_config(self) -> None:
-        config = {
-            key: value
-            for key, value in self._options.items()
-            if key in self.cfg.settings and value is not None
-        }
+        config = {}
+        if self._options:
+            config = {
+                key: value
+                for key, value in self._options.items()
+                if key in self.cfg.settings and value is not None
+            }
         for key, value in config.items():
             self.cfg.set(key.lower(), value)
 

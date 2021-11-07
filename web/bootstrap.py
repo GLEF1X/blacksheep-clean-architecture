@@ -24,14 +24,20 @@ from application.application_services.interfaces.security.jwt.security_service i
 from application.cqrs_lib import MediatorInterface, MediatorImpl
 from application.use_cases.order.commands.create_order.command import CreateOrderCommand
 from application.use_cases.order.commands.create_order.handler import CreateOrderHandler
-from application.use_cases.order.queries.get_order_by_id.handler import GetOrderByIdHandler
+from application.use_cases.order.queries.get_order_by_id.handler import (
+    GetOrderByIdHandler,
+)
 from application.use_cases.order.queries.get_order_by_id.query import GetOrderByIdQuery
-from application.use_cases.validation.validation_decorator import ValidationQueryHandlerDecorator
+from application.use_cases.validation.validation_decorator import (
+    ValidationQueryHandlerDecorator,
+)
 from entities.domain_services.implementation.order_service import OrderServiceImpl
 from infrastructure.implementation.database.data_access.repository import (
     SQLAlchemyRepository,
 )
-from infrastructure.implementation.database.data_access.unit_of_work import SQLAlchemyUnitOfWork
+from infrastructure.implementation.database.data_access.unit_of_work import (
+    SQLAlchemyUnitOfWork,
+)
 from infrastructure.implementation.database.orm.tables import UserModel
 from infrastructure.implementation.delivery.delivery_service import DeliveryServiceImpl
 from utils.logging.gunicorn import (
@@ -72,7 +78,6 @@ def _create_mediator(pool: sessionmaker) -> MediatorInterface:
 
 
 class ApplicationBuilder:
-
     def __init__(self, settings: LazySettings):
         self._controller_router = RoutesRegistry()
         self._settings = settings
@@ -105,7 +110,9 @@ class ApplicationBuilder:
         self._application.router.add_get("/metrics", metrics)
 
     def _setup_security(self):
-        security_service = self._application.services.build_provider().get(SecurityService)
+        security_service = self._application.services.build_provider().get(
+            SecurityService
+        )
         self._application.use_authentication().add(SimpleAuthHandler(security_service))
         self._application.use_authorization().add(
             Policy("authenticated", AuthenticatedRequirement())
@@ -125,7 +132,9 @@ class ApplicationBuilder:
             max_overflow=200,
             poolclass=AsyncAdaptedQueuePool,
         )
-        session_pool = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
+        session_pool = sessionmaker(
+            bind=engine, class_=AsyncSession, expire_on_commit=False
+        )
 
         # mediator
         self._application.services.register_factory(
@@ -147,7 +156,10 @@ class ApplicationBuilder:
 
         # OpenAPI
         docs = OpenAPIHandler(
-            info=Info(title=self._settings.web.docs.title, version=self._settings.web.docs.version),
+            info=Info(
+                title=self._settings.web.docs.title,
+                version=self._settings.web.docs.version,
+            ),
             ui_path=self._settings.web.docs.path,
             json_spec_path=self._settings.web.docs.json_spec_path,
             yaml_spec_path=self._settings.web.docs.yaml_spec_path,

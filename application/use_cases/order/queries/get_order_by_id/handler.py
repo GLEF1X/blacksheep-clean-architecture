@@ -6,6 +6,7 @@ from application.cqrs_lib.result import Failure, Result
 from application.use_cases.order.dto.order_dto import (
     ObtainedOrderDto,
     ObtainedProductDto,
+    CustomerDto,
 )
 from application.use_cases.order.queries.get_order_by_id.query import GetOrderByIdQuery
 from entities.domain_services.interfaces.order_service import (
@@ -50,5 +51,8 @@ class GetOrderByIdHandler(
                 total=self._order_domain_service.get_total(order),
                 order_date=order.order_date,
                 created_at=order.created_at,
+                customer=CustomerDto(
+                    id=order.customer.id, username=order.customer.username
+                ),
             )
         )

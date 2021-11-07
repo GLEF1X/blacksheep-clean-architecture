@@ -18,8 +18,8 @@ logging_level = "DEBUG"
 path = "@format {this.web.api_path}/docs"
 json_spec_path = "@format {this.web.api_path}/openapi.json"
 yaml_spec_path = "@format {this.web.api_path}/openapi.yaml"
-title = "Example API"
-version = "1.0.0beta"
+title = "Simple customer-friendly API"
+version = "0.1 beta"
 
 [default.db]
 user = "postgres"

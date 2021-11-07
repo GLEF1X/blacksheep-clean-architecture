@@ -17,23 +17,23 @@ from web.dto.oauth_input import OauthFormInput
 
 class OauthController(RegistrableApiController):
     def __init__(
-            self,
-            security_service: SecurityService,
-            router: RoutesRegistry,
-            settings: LazySettings,
-            mediator: MediatorInterface,
-            docs: OpenAPIHandler,
+        self,
+        security_service: SecurityService,
+        router: RoutesRegistry,
+        settings: LazySettings,
+        mediator: MediatorInterface,
+        docs: OpenAPIHandler,
     ):
         RegistrableApiController.__init__(self, router, settings, mediator, docs)
         self._security_service = security_service
 
     def register(self) -> None:
-        self.add_route("POST", "/authenticate", self.get_token, require_auth=False)
+        self.add_route("POST", "/authenticate", self.get_token, require_authentication=False)
 
     async def get_token(self, form_gasket: FromJSON[OauthFormInput]) -> Response:
         form = form_gasket.value
         token = await self._security_service.issue_token(
-            FormData(username=form.username, password=form.password)
+            FormData(username=form.username, password=form.password, scopes=form.scopes)
         )
         return self.pretty_json(token)
 

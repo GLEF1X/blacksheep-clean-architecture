@@ -6,7 +6,9 @@ from application.cqrs_lib.extensibility.decorators import HandlerDecorator, _Res
 from application.cqrs_lib.result import Failure, Result
 
 
-class ValidationQueryHandlerDecorator(HandlerDecorator[BaseModel, _ResultType]):
+class ValidationQueryHandlerDecorator(
+    HandlerDecorator[BaseModel, Union[_ResultType, Result[None]]]
+):
     async def handle(self, event: BaseModel) -> Union[_ResultType, Result[None]]:
         try:
             return await self._wrapped_handler.handle(event)

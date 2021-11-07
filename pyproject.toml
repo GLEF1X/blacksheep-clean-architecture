@@ -5,7 +5,7 @@ description = ""
 authors = ["Gleb Garanin <glebgar567@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.9"
 SQLAlchemy = "^1.4.26"
 alembic = "^1.7.4"
 asyncpg = "^0.24.0"
@@ -21,17 +21,16 @@ loguru = "^0.5.3"
 guardpost = "^0.0.8"
 PyJWT = "^2.3.0"
 py-bcrypt = "^0.4"
+blacksheep-prometheus = "^0.1.6"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
 pytest-asyncio = "^0.16.0"
 mypy = "^0.910"
 sqlalchemy2-stubs = "^0.0.2-alpha.19"
-flake8 = "^4.0.1"
 black = "^21.10b0"
 types-ujson = "^4.2.0"
-isort = "^5.10.0"
-blacksheep-prometheus = "^0.1.6"
+isort = { version="^5.10.0", extras=["requirements_deprecated_finder","pipfile_deprecated_finder"]}
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

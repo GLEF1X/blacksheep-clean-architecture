@@ -6,7 +6,7 @@ from alembic import context
 from dynaconf import Dynaconf
 from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import URL
-from sqlalchemy.ext.asyncio import AsyncEngine
+from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine
 
 from infrastructure.implementation.database.orm import tables
 
@@ -77,8 +77,8 @@ async def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = AsyncEngine(
-        engine_from_config(
+    connectable = create_async_engine(
+        url=engine_from_config(
             config.get_section(config.config_ini_section),
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,

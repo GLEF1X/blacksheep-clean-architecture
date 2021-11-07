@@ -10,7 +10,9 @@ from .oauth import OauthController
 from .order import OrderController
 
 
-def install(route_registry: RoutesRegistry, settings: LazySettings, docs: OpenAPIHandler) -> None:
+def install(
+    route_registry: RoutesRegistry, settings: LazySettings, docs: OpenAPIHandler
+) -> None:
     # for registering controller don't need any other dependencies, so filled None
     controllers: List[RegistrableApiController] = [
         OrderController(route_registry, settings, None, docs),  # type: ignore  # noqa

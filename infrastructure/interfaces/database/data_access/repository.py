@@ -56,7 +56,7 @@ class AbstractRepository(abc.ABC, typing.Generic[EntryType]):
         )
 
     def with_changed_query_model(
-        self, /, model: typing.Type[_T]
-    ) -> AbstractRepository[_T]:
+        self, /, model: typing.Type[EntryType]
+    ) -> AbstractRepository[EntryType]:
         self.model = model
         return self

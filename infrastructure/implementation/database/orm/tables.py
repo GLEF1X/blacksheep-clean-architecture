@@ -66,7 +66,7 @@ class OrderModel(Order, Model):
                 enable_typechecks=True,
                 lazy="joined",
             ),
-            "user": relationship(
+            "customer": relationship(
                 "UserModel",
                 back_populates="orders",
                 enable_typechecks=True,
@@ -103,7 +103,7 @@ class ProductModel(Product, Model):
         "properties": {
             "orders": relationship(
                 "OrderModel",
-                secondary=lambda: OrderItemModel.__table__,  # type: ignore
+                secondary=lambda: OrderItemModel.__table__,
                 back_populates="products",
                 enable_typechecks=True,
             )
@@ -176,7 +176,7 @@ class UserModel(User, Model):
         "properties": {
             "orders": relationship(
                 "OrderModel",
-                back_populates="user",
+                back_populates="customer",
                 enable_typechecks=True,
             )
         }
