@@ -1,0 +1,36 @@
+version: "3.9"
+
+services:
+  database:
+    container_name: ${DB_CONTAINER_NAME:-postgres}
+    build:
+      context: ""
+      dockerfile: Database.dockerfile
+    expose:
+      - 5432
+    restart: always
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    command: "postgres -c 'config_file=/etc/postgresql/postgresql.conf'"
+    environment:
+      # TODO make secrets or just .env file+
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:
+
+networks:
+  backend:
+    driver: bridge

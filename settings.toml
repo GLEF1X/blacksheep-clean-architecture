@@ -26,7 +26,7 @@ user = "postgres"
 host = "localhost"
 password = "postgres"
 database = "clean_architecture_db"
-connection_uri = "@format postgresql+asyncpg://{this.db.user}:{this.db.password}@{this.db.host}/{this.db.database}"
+connection_uri = "@format postgresql+asyncpg://{this.db.user}:{this.db.password}@{this.db.host}/{this.db.database}?prepared_statement_cache_size=500"
 
 [default.web.auth]
 secret_key = "23368667db5961f70f66a345bd9a01b3072535d8facfd651af236cfd7124dcc6"

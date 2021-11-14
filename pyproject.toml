@@ -7,7 +7,7 @@ authors = ["Gleb Garanin <glebgar567@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.9"
 SQLAlchemy = "^1.4.26"
-alembic = "^1.7.4"
+alembic = "^1.7.5"
 asyncpg = "^0.24.0"
 dynaconf = { version="^3.1.7", extras=["all"] }
 blacksheep = "^1.2.0"
@@ -17,11 +17,13 @@ uvicorn = "^0.15.0"
 ujson = "^4.2.0"
 pydantic = "^1.8.2"
 orjson = "^3.6.4"
-loguru = "^0.5.3"
+colorlog = "6.6.0"
 guardpost = "^0.0.8"
 PyJWT = "^2.3.0"
 py-bcrypt = "^0.4"
 blacksheep-prometheus = "^0.1.6"
+redis = "^3.5.3"
+apscheduler-di = "^0.0.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
@@ -31,6 +33,9 @@ sqlalchemy2-stubs = "^0.0.2-alpha.19"
 black = "^21.10b0"
 types-ujson = "^4.2.0"
 isort = { version="^5.10.0", extras=["requirements_deprecated_finder","pipfile_deprecated_finder"]}
+devtools = "^0.8.0"
+pytest-lazy-fixture = "^0.6.3"
+colorlog = "^6.6.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -7,7 +7,8 @@ from blacksheep.server import Application
 from blacksheep.testing import TestClient
 from dynaconf import LazySettings
 
-from web.bootstrap import configure_application, get_settings
+from tests.functional.stubs.insecure_app_builder import InsecureApplicationBuilder
+from src.web import get_settings
 
 
 @pytest.fixture(scope="module")
@@ -35,14 +36,19 @@ def set_test_settings(settings: LazySettings):
 
 @pytest.mark.asyncio
 @pytest.fixture(scope="module")
-async def app(settings: LazySettings) -> Application:
-    app = configure_application(settings)
+async def insecure_app(settings: LazySettings) -> Application:
+    app = InsecureApplicationBuilder(settings).build()
     await app.start()
     yield app
     await app.stop()
 
 
+@pytest.fixture(scope="module")
+def base_api_path(settings) -> str:
+    return settings.web.api_path
+
+
 @pytest.mark.usefixtures("start_application")
 @pytest.fixture(scope="module")
-def test_client(app: Application) -> TestClient:
-    return TestClient(app)
+def insecure_test_client(insecure_app: Application) -> TestClient:
+    return TestClient(insecure_app)
