@@ -64,8 +64,8 @@ WORKDIR $PYSETUP_PATH
 COPY --from=builder-base $POETRY_HOME $POETRY_HOME
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 
-# quicker with_changed_query_model as runtime deps are already installed
-RUN poetry with_changed_query_model
+# quicker install as runtime deps are already installed
+RUN poetry install
 
 # chown all the files to the app user
 
