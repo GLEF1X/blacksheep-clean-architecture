@@ -1,63 +1,48 @@
 from dataclasses import asdict
-from typing import Any, Union
+from typing import Union
 
-from src.application.cqrs_lib.handler import BaseHandler
-from src.application.cqrs_lib.result import Failure, Result
 from src.application.use_cases.order.dto.order_dto import (
     ObtainedOrderDto,
     ObtainedProductDto,
-    CustomerDto,
+    UserDto,
 )
+from src.application.use_cases.order.queries.get_order_by_id.mapper import EntityToDtoMapper
 from src.application.use_cases.order.queries.get_order_by_id.query import (
     GetOrderByIdQuery,
 )
-from src.entities.domain_services.interfaces.order_service import (
+from src.domain.domain_services.interfaces.order_service import (
     OrderDomainServiceInterface,
 )
-from src.entities.models.order import Order
-from src.infrastructure.implementation.database.orm.tables import OrderModel
-from src.infrastructure.interfaces.database.data_access.repository import (
-    AbstractRepository,
-)
-from src.infrastructure.interfaces.database.data_access.unit_of_work import (
+from src.infrastructure.interfaces.database.repositories.order.repository import OrderRepository
+from src.infrastructure.interfaces.database.unit_of_work import (
     AbstractUnitOfWork,
 )
+from src.utils.cqrs_lib.handler import BaseHandler
+from src.utils.cqrs_lib.result import Failure, Result
+from src.utils.exceptions import QueryError
 
 
 class GetOrderByIdHandler(
     BaseHandler[GetOrderByIdQuery, Union[Result[ObtainedOrderDto], Result[None]]]
 ):
     def __init__(
-        self,
-        repository: AbstractRepository[Order],
-        order_domain_service: OrderDomainServiceInterface,
-        uow: AbstractUnitOfWork[Any],
+            self,
+            repository: OrderRepository,
+            order_domain_service: OrderDomainServiceInterface,
+            uow: AbstractUnitOfWork,
     ) -> None:
         self._repository = repository
         self._order_domain_service = order_domain_service
         self._uow = uow
+        # TODO fix violation of DIP
+        self._mapper = EntityToDtoMapper(self._order_domain_service)
 
     async def handle(
-        self, event: GetOrderByIdQuery
+            self, event: GetOrderByIdQuery
     ) -> Union[Result[ObtainedOrderDto], Result[None]]:
         async with self._uow.pipeline:
-            order_repository = self._repository.with_changed_query_model(OrderModel)
-            order = await order_repository.get_one(OrderModel.id == event.id)
-
-        if order is None:
-            return Result.fail(Failure("Order was not found"))
-        return Result.success(
-            ObtainedOrderDto(
-                id=order.id,
-                # TODO create mapper
-                products=[
-                    ObtainedProductDto(**asdict(product)) for product in order.products
-                ],
-                total=self._order_domain_service.get_total(order),
-                order_date=order.order_date,
-                created_at=order.created_at,
-                customer=CustomerDto(
-                    id=order.customer.id, username=order.customer.username
-                ),
-            )
-        )
+            try:
+                order = await self._repository.get_order_by_id(event.id)
+            except QueryError as ex:
+                return Result.fail(Failure(ex.hint))
+        return Result.success(self._mapper.to_dto(order))

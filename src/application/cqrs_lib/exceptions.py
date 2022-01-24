@@ -1,2 +1,0 @@
-class EventOrCommandNotFound(Exception):
-    pass

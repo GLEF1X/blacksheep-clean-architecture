@@ -1,49 +1,29 @@
 from __future__ import annotations
 
-from typing import Any
-
-from src.application.cqrs_lib.handler import BaseHandler
-from src.application.cqrs_lib.result import Result
 from src.application.use_cases.order.commands.create_order.command import (
     CreateOrderCommand,
 )
-from src.entities.models.order import Order
-from src.infrastructure.implementation.database.orm.tables import (
-    OrderItemModel,
-    OrderModel,
-)
-from src.infrastructure.interfaces.database.data_access.repository import (
-    AbstractRepository,
-)
-from src.infrastructure.interfaces.database.data_access.unit_of_work import (
+from src.application.use_cases.order.commands.create_order.mapper import CreateOrderCommandToQueryMapper
+from src.infrastructure.interfaces.database.repositories.order.repository import OrderRepository
+from src.infrastructure.interfaces.database.unit_of_work import (
     AbstractUnitOfWork,
 )
+from src.utils.cqrs_lib.handler import BaseHandler
+from src.utils.cqrs_lib.result import Result
 
 
 class CreateOrderHandler(BaseHandler[CreateOrderCommand, Result[int]]):
     def __init__(
-        self,
-        repository: AbstractRepository[Order],
-        uow: AbstractUnitOfWork[Any],
+            self,
+            order_repository: OrderRepository,
+            uow: AbstractUnitOfWork,
     ) -> None:
-        self._repository = repository
+        self._repository = order_repository
         self._uow = uow
+        # TODO fix violation of DIP
+        self._mapper = CreateOrderCommandToQueryMapper()
 
     async def handle(self, event: CreateOrderCommand) -> Result[int]:
         async with self._uow.pipeline:
-            order_id = await self._repository.with_changed_query_model(OrderModel).add(
-                order_date=event.create_order_dto.order_date
-            )
-            for product_dto in event.create_order_dto.products:
-                models_to_insert_in_m2m = [
-                    OrderItemModel(
-                        product_id=product_dto.id,
-                        order_id=order_id,
-                        quantity=product_dto.quantity,
-                    )
-                ]
-            await self._repository.with_changed_query_model(OrderItemModel).add_many(
-                *models_to_insert_in_m2m
-            )
-
-        return Result.success(order_id)
+            order_id = await self._repository.create_order(self._mapper.to_query(event))
+            return Result.success(order_id)

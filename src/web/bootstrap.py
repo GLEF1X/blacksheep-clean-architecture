@@ -17,26 +17,27 @@ from sqlalchemy.orm import sessionmaker
 from src.application.application_services.interfaces.security.jwt.authentication_service import (
     AuthenticationService,
 )
-from src.application.cqrs_lib import MediatorInterface
-from src.application.use_cases.background_jobs.send_email import send_email_to_interested_users
-from src.infrastructure.implementation.email.email_client import EmailClientImpl
-from src.infrastructure.interfaces.email.email_client import EmailClient
+from src.application.use_cases.background_jobs.send_email import send_email_to_interested_customers
+from src.infrastructure.implementation.integrations.email.email_service import EmailServiceImpl
+from src.infrastructure.interfaces.integration.email.email_service import EmailService
+from src.utils.cqrs_lib import MediatorInterface
+from src.utils.logging import configure_logging, LoggingConfig
 from src.web.api import controllers
 from src.web.events import on_shutdown, on_startup
 from src.web.factories import user_repository_factory, authentication_service_factory, \
     token_issuer_factory, mediator_factory, openapi_docs_factory
 from src.web.middlewares.logging_middleware import LoggingMiddleware
-from src.web.web_utils.colored_logger import COLORED_LOGGING_CONFIG
-from src.web.web_utils.gunicorn_app import StandaloneApplication
-from src.web.web_utils.security.handlers.authorization_handler import SimpleAuthHandler
-from src.web.web_utils.security.requirements.scope_requirement import ScopeRequirement
-from src.web.web_utils.security.requirements.utils import generate_crud_scopes
-
-BASE_DIR = pathlib.Path(__name__).resolve().parent.parent
-DISABLED = "-"
+from src.web.util.blacksheep_context import plugins
+from src.web.util.blacksheep_context.integration.structlog import StructlogContextVarBindMiddleware
+from src.web.util.blacksheep_context.middleware import RawContextMiddleware
+from src.web.util.gunicorn_app import StandaloneApplication
+from src.web.util.security.handlers.authorization_handler import SimpleAuthHandler
+from src.web.util.security.requirements.utils import generate_crud_policies
 
 
 class ApplicationBuilder:
+    __slots__ = ("_root_route_registry", "_settings", "_application")
+
     def __init__(self, settings: LazySettings):
         self._root_route_registry = RoutesRegistry()
         self._settings = settings
@@ -51,8 +52,7 @@ class ApplicationBuilder:
         self._setup_dependency_injection()
         self._setup_routes()
         self._setup_middlewares()
-        # Setup of authentication must be executed exactly after DI installation, because it rely
-        # that application services will contain provider of SecurityService
+        # Setup of security must be executed exactly after DI installation, because it rely on some services
         self._setup_security()
         self._setup_metrics()
         self._setup_background_jobs()
@@ -63,6 +63,11 @@ class ApplicationBuilder:
         self._application.on_stop += on_shutdown
 
     def _setup_middlewares(self) -> None:
+        self._application.middlewares.append(RawContextMiddleware(plugins=(
+            plugins.RequestIdPlugin(),
+            plugins.CorrelationIdPlugin()
+        )))
+        self._application.middlewares.append(StructlogContextVarBindMiddleware())
         self._application.middlewares.append(LoggingMiddleware())
 
     def _setup_metrics(self) -> None:
@@ -76,9 +81,7 @@ class ApplicationBuilder:
         self._application.use_authentication().add(SimpleAuthHandler(security_service))
         authorization_strategy = self._application.use_authorization()
         authorization_strategy += Policy("authenticated", AuthenticatedRequirement())
-        authorization_strategy += Policy(
-            "scoped", ScopeRequirement(scopes=generate_crud_scopes("orders"))
-        )
+        authorization_strategy.policies.extend(generate_crud_policies("orders"))
 
     def _setup_dependency_injection(self) -> None:
         # controller dependencies(singletones)
@@ -91,7 +94,9 @@ class ApplicationBuilder:
             future=True,
             query_cache_size=1200,
             pool_size=100,
-            max_overflow=200
+            max_overflow=200,
+            echo=True,
+            echo_pool=True
         )
         session_pool = sessionmaker(bind=engine, class_=AsyncSession, expire_on_commit=False)
         self._application.services.add_instance(engine, AsyncEngine)
@@ -101,7 +106,7 @@ class ApplicationBuilder:
         self._application.services.add_transient_by_factory(mediator_factory, MediatorInterface)
 
         # infrastructure
-        self._application.services.add_scoped(EmailClient, EmailClientImpl)
+        self._application.services.add_scoped(EmailService, EmailServiceImpl)
 
         # application services
         self._application.services.add_transient_by_factory(authentication_service_factory)
@@ -125,18 +130,18 @@ class ApplicationBuilder:
         base_async_scheduler = AsyncIOScheduler(jobstores=job_stores, job_defaults=job_defaults)
         scheduler = ContextSchedulerDecorator(base_async_scheduler)
         self._application.services.add_instance(scheduler, BaseScheduler)
-        # overtaking dependencies
         scheduler.ctx._map = self._application.services._map  # noqa
-        scheduler.add_job(send_email_to_interested_users, "interval", seconds=120,
+        scheduler.add_job(send_email_to_interested_customers, "interval", seconds=120,
                           replace_existing=True)
         scheduler.start()
 
 
 def get_settings() -> LazySettings:
+    base_directory = pathlib.Path(__name__).resolve().parent.parent
     return Dynaconf(
         settings_files=["settings.toml", ".secrets.toml"],
         redis=True,
-        preload=[BASE_DIR / "settings.toml"],
+        preload=[base_directory / "settings.toml"],
         environments=["development", "production", "testing"],
         load_dotenv=False,
         auto_cast=True,
@@ -145,15 +150,15 @@ def get_settings() -> LazySettings:
 
 def run() -> None:
     settings = get_settings()
+    log_config = configure_logging(LoggingConfig())
     application = ApplicationBuilder(settings).build()
     options = {
         "bind": "%s:%s" % (settings.web.host, settings.web.port),
-        "workers": 2,
         "worker_class": "uvicorn.workers.UvicornWorker",
         "reload": True,
         "disable_existing_loggers": False,
-        "logconfig_dict": COLORED_LOGGING_CONFIG,
-        "preload_app": True
+        "preload_app": True,
+        "logconfig_dict": log_config
     }
     gunicorn_app = StandaloneApplication(application, options)
     gunicorn_app.run()

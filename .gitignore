@@ -8,6 +8,8 @@ __pycache__/
 # C extensions
 *.so
 
+deploy/centry/self-hosted
+
 # IDE
 .idea
 

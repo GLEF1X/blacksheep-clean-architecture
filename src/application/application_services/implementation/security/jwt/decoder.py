@@ -2,9 +2,7 @@ from typing import Any, Dict
 
 import jwt
 
-from src.application.application_services.implementation.security.jwt.exceptions import (
-    MalformedAPIToken,
-)
+from src.application.application_services.implementation.security.jwt.exceptions import SecurityExceptionCatalog
 from src.application.application_services.interfaces.security.jwt.decoder import (
     TokenDecoder,
 )
@@ -21,4 +19,4 @@ class JWTTokenDecoder(TokenDecoder):
                 jwt=token, key=self._secret_key, algorithms=[self._encoding_algorithm]
             )
         except jwt.PyJWTError:
-            raise MalformedAPIToken("API token is invalid.")
+            raise SecurityExceptionCatalog.MALFORMED_API_TOKEN

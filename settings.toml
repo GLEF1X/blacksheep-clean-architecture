@@ -31,3 +31,6 @@ connection_uri = "@format postgresql+asyncpg://{this.db.user}:{this.db.password}
 [default.web.auth]
 secret_key = "23368667db5961f70f66a345bd9a01b3072535d8facfd651af236cfd7124dcc6"
 algorithm = "HS256"
+
+[default.integrations.logs]
+sentry_dsn = "http://a0385fb874a84ad58e9541d235c64441@127.0.0.1:9000/1"

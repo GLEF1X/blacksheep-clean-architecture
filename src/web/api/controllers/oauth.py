@@ -1,3 +1,4 @@
+import http
 from typing import Optional
 
 from blacksheep import Response
@@ -10,10 +11,12 @@ from dynaconf import LazySettings
 from src.application.application_services.dto.form_data import FormData
 from src.application.application_services.dto.issued_token import IssuedTokenDto
 from src.application.application_services.dto.user_dto import UserDto
+from src.application.application_services.implementation.security.jwt.exceptions import SecurityExceptionCatalog
 from src.application.application_services.interfaces.security.jwt.token_issuer import (
     TokenIssuer,
 )
-from src.application.cqrs_lib import MediatorInterface
+from src.utils.cqrs_lib import MediatorInterface
+from src.utils.exceptions import ProcessError
 from src.web.api.controllers import RegistrableApiController
 from src.web.dto.oauth_input import OauthFormInput
 
@@ -38,9 +41,12 @@ class OauthController(RegistrableApiController):
 
     async def get_token(self, form_gasket: FromJSON[OauthFormInput]) -> Response:
         form = form_gasket.value
-        token = await self._token_issuer.issue_token(
-            FormData(username=form.username, password=form.password, scopes=form.scopes)
-        )
+        try:
+            token = await self._token_issuer.issue_token(
+                FormData(username=form.username, password=form.password, scopes=form.scopes)
+            )
+        except ProcessError:
+            return Response(status=http.HTTPStatus.UNAUTHORIZED)
         return self.pretty_json(token)
 
     @classmethod
@@ -53,10 +59,9 @@ class OauthController(RegistrableApiController):
 
     def register(self) -> None:
         self.add_route(
-            "POST",
-            "/sign-in",
-            self.get_token,
-            disable_authorization=True,
+            method="POST",
+            path="/sign-in",
+            controller_method=self.get_token,
             doc=EndpointDocs(
                 responses={
                     200: ResponseInfo(

@@ -5,8 +5,6 @@ from typing import List
 
 from pydantic import BaseModel, Field, PositiveFloat, PositiveInt
 
-GREATER_THAN_1 = 1
-
 
 class ObtainedProductDto(BaseModel):
     price: float
@@ -14,14 +12,14 @@ class ObtainedProductDto(BaseModel):
     id: int
 
 
-class CustomerDto(BaseModel):
+class UserDto(BaseModel):
     id: int
     username: str
 
 
 class CreateProductDto(BaseModel):
     id: PositiveInt
-    quantity: int = Field(..., ge=GREATER_THAN_1)
+    quantity: int = Field(..., ge=1)
 
 
 class ObtainedOrderDto(BaseModel):
@@ -30,9 +28,10 @@ class ObtainedOrderDto(BaseModel):
     total: PositiveFloat
     order_date: datetime
     created_at: datetime
-    customer: CustomerDto
+    customer: UserDto
 
 
 class CreateOrderDto(BaseModel):
     products: List[CreateProductDto]
     order_date: datetime
+    customer_id: int

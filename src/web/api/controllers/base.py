@@ -10,7 +10,7 @@ from blacksheep.server.openapi.v3 import OpenAPIHandler
 from blacksheep.server.routing import RoutesRegistry
 from dynaconf import LazySettings
 
-from src.application.cqrs_lib import MediatorInterface
+from src.utils.cqrs_lib import MediatorInterface
 
 _HandlerType = TypeVar("_HandlerType", bound=Callable[..., Any])
 
@@ -39,13 +39,14 @@ class RegistrableApiController(ApiController):
 
     def add_route(
         self,
+        *decorators: Callable[[_HandlerType], _HandlerType],
         method: str,
         path: str,
-        controller_method: Callable[..., Any],
+        controller_method: _HandlerType,
         include_in_swagger: bool = True,
         doc: Optional[EndpointDocs] = None,
         scope: str = "authorization",
-        disable_authorization: bool = False,
+        disable_authorization: bool = True,
     ) -> None:
         """
         Helps to add new route to router, justify patching controller methods.
@@ -61,9 +62,9 @@ class RegistrableApiController(ApiController):
         :param disable_authorization:
         """
         handler_func = controller_method.__func__  # noqa  # type: ignore
-        patched_method = self._mark_handler_as_method_of_controller(handler_func)
+        handler = self._mark_handler_as_method_of_controller(handler_func)
         if not disable_authorization:
-            patched_method = auth(policy=scope)(patched_method)
+            handler = auth(policy=scope)(handler)
         if doc is not None and include_in_swagger is False:
             warnings.warn(
                 "It's senseless to pass on the doc parameter to the `add_route` "
@@ -72,14 +73,16 @@ class RegistrableApiController(ApiController):
                 stacklevel=2,
             )
         if not include_in_swagger:
-            patched_method = self._docs.ignore()(patched_method)
+            handler = self._docs.ignore()(handler)
         elif doc is not None:
-            patched_method = self._docs(doc)(patched_method)
-        self._router.add(method, path, patched_method)
+            handler = self._docs(doc)(handler)
 
-    def _mark_handler_as_method_of_controller(
-        self, handler: _HandlerType
-    ) -> _HandlerType:
+        for decorator in decorators:
+            handler = decorator(handler)
+
+        self._router.add(method, path, handler)
+
+    def _mark_handler_as_method_of_controller(self, handler: _HandlerType) -> _HandlerType:
         controller_type = self.__class__
         setattr(handler, "controller_type", controller_type)
         return handler

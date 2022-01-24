@@ -4,10 +4,10 @@ from datetime import datetime
 
 import pytest
 
-from src.entities.domain_services.implementation.order_service import OrderServiceImpl
-from src.entities.models.order import Order
-from src.entities.models.product import Product
-from src.entities.models.user import User
+from src.domain.domain_services.implementation.order_service import OrderServiceImpl
+from src.domain.entities.order import Order
+from src.domain.entities.product import Product
+from src.domain.entities.customer import User
 from src.infrastructure.implementation.delivery.delivery_service import (
     DeliveryServiceImpl,
 )

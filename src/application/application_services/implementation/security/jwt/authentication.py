@@ -6,20 +6,12 @@ from typing import Dict, Any, List
 from src.application.application_services.dto.auth_response import AuthCredentials
 from src.application.application_services.dto.user_dto import UserDto
 from src.application.application_services.implementation.security.jwt.exceptions import (
-    APITokenOmittedException,
-    UserNotRegistered,
-    TokenExpiredException,
-)
-from src.application.application_services.interfaces.security.jwt.authentication_service import (
-    AuthenticationService,
+    SecurityExceptionCatalog,
 )
 from src.application.application_services.interfaces.security.jwt.decoder import (
     TokenDecoder,
 )
-from src.entities.models.user import User
-from src.infrastructure.interfaces.database.data_access.repository import (
-    AbstractRepository,
-)
+from src.infrastructure.interfaces.database.repositories.customer.repository import UserRepository
 
 
 @dataclasses.dataclass()
@@ -31,39 +23,35 @@ class JWTTokenPayload:
     scopes: List[str]
 
 
-class JWTAuthenticationService(AuthenticationService):
+class JWTAuthenticationService:
     def __init__(
-        self, token_decoder: TokenDecoder, user_repository: AbstractRepository[User]
+            self, token_decoder: TokenDecoder, customer_repository: UserRepository
     ):
         self._token_decoder = token_decoder
-        self._user_repository = user_repository
+        self._customer_repository = customer_repository
 
     async def authenticate(self, authorization_header: str) -> AuthCredentials:
         if not authorization_header:
-            raise APITokenOmittedException(f"Authorization header is empty.")
+            raise SecurityExceptionCatalog.MISSING_API_TOKEN
         if not authorization_header.startswith("Bearer "):
-            raise APITokenOmittedException(f"Authorization method is not Bearer.")
+            raise SecurityExceptionCatalog.INVALID_AUTHORIZATION_METHOD.with_params(required_schema="Bearer")
         payload = self._extract_jwt_payload(authorization_header)
         if payload.expire_at < time.mktime(datetime.utcnow().utctimetuple()):
-            raise TokenExpiredException("API access token was expired!")
+            raise SecurityExceptionCatalog.TOKEN_EXPIRED
 
-        user = await self._user_repository.get_one(
-            self._user_repository.model.username == payload.username
-        )
-        if user is None:
-            raise UserNotRegistered(
-                f"JWT authentication failed. User with username={payload.username} not found."
-            )
+        customer = await self._customer_repository.get_by_username(payload.username)
+        if customer is None:
+            raise SecurityExceptionCatalog.USER_NOT_REGISTERED.with_params(username=payload.username)
 
         return AuthCredentials(
             raw_payload=payload.full,
             jwt_token=payload.raw_jwt_token,
             user=UserDto(
-                id=user.id,
-                first_name=user.first_name,
-                last_name=user.last_name,
-                username=user.username,
-                email=user.email,
+                id=customer.id,
+                first_name=customer.first_name,
+                last_name=customer.last_name,
+                username=customer.username,
+                email=customer.email,
             ),
             scopes=payload.scopes,
         )

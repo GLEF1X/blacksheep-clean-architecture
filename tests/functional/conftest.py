@@ -7,14 +7,14 @@ from blacksheep.server import Application
 from blacksheep.testing import TestClient
 from dynaconf import LazySettings
 
+from src.web.bootstrap import get_settings
 from tests.functional.stubs.insecure_app_builder import InsecureApplicationBuilder
-from src.web import get_settings
 
 
 @pytest.fixture(scope="module")
 def event_loop() -> asyncio.AbstractEventLoop:
     """
-    This fixture fixes problem with scopes of fixture.
+    This fixture fixes problem with _required_scopes of fixture.
 
     Traceback: You tried to access the 'function' scoped fixture 'event_loop'
                with a 'module' scoped request object, involved factories

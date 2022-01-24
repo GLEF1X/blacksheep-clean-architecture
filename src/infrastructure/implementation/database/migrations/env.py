@@ -5,16 +5,17 @@ from logging.config import fileConfig
 from alembic import context
 from dynaconf import Dynaconf
 from sqlalchemy import engine_from_config, pool
-from sqlalchemy.engine import URL
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy.engine import URL, Connection
+from sqlalchemy.ext.asyncio import AsyncEngine
 
-from src.infrastructure.implementation.database.orm import tables
+from src.infrastructure.implementation.database.orm.models import mapper_registry
 
 config = context.config
 fileConfig(config.config_file_name)
-target_metadata = tables.mapper_registry.metadata
 
-BASE_DIR = pathlib.Path(__name__).resolve().parent.parent.parent.parent.parent
+target_metadata = mapper_registry.metadata
+
+BASE_DIR = pathlib.Path(__name__).resolve().parent
 
 project_settings = Dynaconf(
     settings_files=["settings.toml", ".secrets.toml"],
@@ -37,7 +38,7 @@ config.set_main_option(
 )
 
 
-def run_migrations_offline():
+def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
 
     This configures the context with just a URL
@@ -63,7 +64,7 @@ def run_migrations_offline():
         context.run_migrations()
 
 
-def do_run_migrations(connection):
+def do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
 
     with context.begin_transaction():
@@ -77,8 +78,8 @@ async def run_migrations_online():
     and associate a connection with the context.
 
     """
-    connectable = create_async_engine(
-        url=engine_from_config(
+    connectable = AsyncEngine(
+        engine_from_config(
             config.get_section(config.config_ini_section),
             prefix="sqlalchemy.",
             poolclass=pool.NullPool,

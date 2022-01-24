@@ -1,18 +1,14 @@
 import asyncio
 
-from sqlalchemy import func
-
-from src.entities.models.user import User
-from src.infrastructure.implementation.database.orm.tables import UserModel
-from src.infrastructure.interfaces.database.data_access.repository import AbstractRepository
-from src.infrastructure.interfaces.email.email_client import EmailClient
+from src.infrastructure.interfaces.database.repositories.customer.repository import UserRepository
+from src.infrastructure.interfaces.integration.email.email_service import EmailService
 
 
-async def send_email_to_interested_users(user_repository: AbstractRepository[User],
-                                         email_client: EmailClient):
-    users = await user_repository.get_all(func.count(UserModel.orders) >= 2)
+async def send_email_to_interested_customers(customer_repository: UserRepository,
+                                             email_client: EmailService):
+    customers = await customer_repository.get_interested_customers()
     tasks = [
-        email_client.send_message(text="Thank you for buying from us")
-        for _ in users
+        email_client.send_mail(text="Thank you for buying from us")
+        for _ in customers
     ]
     await asyncio.gather(*tasks)

@@ -1,4 +1,3 @@
-from apscheduler.schedulers.base import BaseScheduler, STATE_RUNNING
 from blacksheep.server import Application
 from sqlalchemy.ext.asyncio import AsyncEngine
 
